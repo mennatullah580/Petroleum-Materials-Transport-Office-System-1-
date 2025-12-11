@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36518.9
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Petroleum-Materials-Transport-Office-System", "Petroleum-Materials-Transport-Office-System\Petroleum-Materials-Transport-Office-System.csproj", "{E994D5FC-80BB-464A-89C9-AC30C959112F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E994D5FC-80BB-464A-89C9-AC30C959112F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E994D5FC-80BB-464A-89C9-AC30C959112F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E994D5FC-80BB-464A-89C9-AC30C959112F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E994D5FC-80BB-464A-89C9-AC30C959112F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {903A12B0-3446-49E4-A887-3416E8264B8A}
+	EndGlobalSection
+EndGlobal

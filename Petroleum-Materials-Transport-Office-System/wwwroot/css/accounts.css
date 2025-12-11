@@ -1,0 +1,106 @@
+﻿body {
+    background-color: #C8D9E6;
+    margin: 0;
+    min-height: 100vh;
+    font-family: Cairo, sans-serif;
+}
+
+
+.container {
+    padding: 20px;
+}
+
+.box {
+    background: #4f7c8a;
+    padding: 20px;
+    border-radius: 12px;
+    width: 90%;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.title {
+    background: #f5EFEB;
+    display: inline-block;
+    padding: 5px 15px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+.tabs a {
+    background: #f5EFEB;
+    padding: 5px 12px;
+    border-radius: 4px;
+    margin-right: 10px;
+    text-decoration: none;
+    color: black;
+}
+
+.tabs .active {
+    background: #f5EFEB;
+    font-weight: bold;
+}
+
+.search-area {
+    padding: 10px 0;
+}
+
+    .search-area input {
+        padding: 8px 12px;
+        width: 200px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+        background-color: #f5EFEB;
+        outline: none;
+    }
+
+    .search-area button {
+        padding: 6px 12px;
+        border-radius: 6px;
+        border: none;
+        background-color: #f5EFEB;
+        cursor: pointer;
+    }
+
+.data-table {
+    width: 100%;
+    background: #f5EFEB;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+    .data-table th, .data-table td {
+        border: 1px solid #666;
+        padding: 8px;
+        text-align: center;
+    }
+
+        .data-table th:first-child {
+            border-top-left-radius: 10px;
+        }
+
+        .data-table th:last-child {
+            border-top-right-radius: 10px;
+        }
+
+    .data-table tr:last-child td:first-child {
+        border-bottom-left-radius: 10px;
+    }
+
+    .data-table tr:last-child td:last-child {
+        border-bottom-right-radius: 10px;
+    }
+
+    .data-table th {
+        background-color: #f5EFEB;
+        font-weight: bold;
+    }
+
+.data-table-wrapper {
+    max-height: 400px;
+    overflow-y: auto;
+    margin-top: 10px;
+}

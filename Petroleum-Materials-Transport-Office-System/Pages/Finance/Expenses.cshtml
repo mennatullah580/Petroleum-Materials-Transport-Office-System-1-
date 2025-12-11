@@ -1,0 +1,233 @@
+﻿@page
+@model Petroleum_Materials_Transport_Office_System.Pages.Finance.ExpensesModel
+@{
+    Layout = null;
+    ViewData["Title"] = "المصروفات";
+}
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>@ViewData["Title"]</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --navy: #2F4156;
+            --teal: #567C8D;
+            --beige: #F5EFEB;
+            --sky-blue: #C8D9E6;
+            --white: #FFFFFF;
+        }
+
+        body {
+            background-color: var(--sky-blue);
+            font-family: 'Cairo', sans-serif;
+            margin: 0;
+            padding: 20px;
+            direction: rtl;
+        }
+
+        .main-wrapper {
+            background: linear-gradient(135deg, var(--teal) 0%, #4a6b7c 100%);
+            padding: 25px 25px 0 25px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            min-height: 85vh;
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tabs-nav {
+            display: flex;
+            gap: 5px;
+            padding-right: 0;
+            margin-bottom: 0;
+            position: relative;
+            z-index: 10;
+            align-items: flex-end;
+        }
+
+        .tab-link {
+            background-color: rgba(255,255,255,0.7);
+            border: none;
+            padding: 12px 30px;
+            font-weight: 700;
+            color: var(--navy);
+            border-radius: 12px 12px 0 0;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.3s;
+        }
+
+            .tab-link:hover {
+                background-color: var(--white);
+                transform: translateY(-2px);
+            }
+
+            .tab-link.active-tab {
+                background-color: var(--beige);
+                color: var(--navy);
+                padding-bottom: 20px;
+                margin-bottom: -10px;
+                z-index: 20;
+                position: relative;
+                box-shadow: 0 -5px 10px rgba(0,0,0,0.05);
+            }
+
+                .tab-link.active-tab::after {
+                    content: '';
+                    position: absolute;
+                    bottom: -5px;
+                    left: 0;
+                    right: 0;
+                    height: 10px;
+                    background-color: var(--beige);
+                    z-index: 25;
+                }
+
+        .content-card {
+            background-color: var(--beige);
+            padding: 35px;
+            border-radius: 20px; /* Fully rounded for middle tabs */
+            min-height: 600px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            position: relative;
+            z-index: 5;
+            margin-top: -1px;
+        }
+
+        .form-box {
+            background-color: var(--navy);
+            padding: 40px;
+            border-radius: 20px;
+            color: var(--white);
+            max-width: 800px;
+            margin: 0 auto;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.25);
+        }
+
+        .form-title {
+            color: var(--white);
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+            font-size: 24px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+
+        .full-width {
+            grid-column: span 2;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: var(--sky-blue);
+            font-size: 15px;
+        }
+
+            label i {
+                margin-left: 8px;
+                color: var(--teal);
+            }
+
+        input, textarea {
+            width: 100%;
+            padding: 14px;
+            border-radius: 10px;
+            border: 2px solid transparent;
+            background-color: #fcfcfc;
+            color: #333;
+            font-family: 'Cairo';
+            font-size: 15px;
+            transition: 0.3s;
+            box-sizing: border-box;
+        }
+
+            input:focus, textarea:focus {
+                outline: none;
+                border-color: var(--teal);
+                box-shadow: 0 0 10px rgba(86, 124, 141, 0.5);
+            }
+
+        .btn-save {
+            background: linear-gradient(to bottom, #ffffff, #e6e6e6);
+            color: var(--navy);
+            padding: 14px 50px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 25px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            transition: 0.2s;
+        }
+
+            .btn-save:hover {
+                transform: translateY(-3px);
+            }
+    </style>
+</head>
+<body>
+
+    <div class="main-wrapper">
+        <div class="tabs-nav">
+            <a href="/Finance/Invoices" class="tab-link"><i class="fa-solid fa-file-invoice"></i> الفواتير</a>
+            <a href="/Finance/Payments" class="tab-link"><i class="fa-solid fa-money-bill-wave"></i> المدفوعات</a>
+            <a href="/Finance/Expenses" class="tab-link active-tab"><i class="fa-solid fa-wallet"></i> المصروفات</a>
+            <a href="/Finance/Reports" class="tab-link"><i class="fa-solid fa-chart-pie"></i> التقارير</a>
+        </div>
+
+        <div class="content-card">
+            <div class="form-box">
+                <h3 class="form-title"><i class="fa-solid fa-file-invoice-dollar"></i> تسجيل مصروف عام</h3>
+                <form method="post">
+                    <div class="form-grid">
+                        <div>
+                            <label><i class="fa-solid fa-tag"></i> نوع المصروف</label>
+                            <input type="text" placeholder="إيجار، صيانة..." name="ExpenseType">
+                        </div>
+
+                        <div>
+                            <label><i class="fa-solid fa-coins"></i> المبلغ</label>
+                            <input type="number" step="0.01" name="Amount">
+                        </div>
+
+                        <div class="full-width">
+                            <label><i class="fa-regular fa-calendar-days"></i> التاريخ</label>
+                            <input type="date" name="Date">
+                        </div>
+
+                        <div class="full-width">
+                            <label><i class="fa-solid fa-align-right"></i> الوصف</label>
+                            <textarea rows="4" name="Description"></textarea>
+                        </div>
+                    </div>
+
+                    <div style="text-align: left;">
+                        <button type="submit" class="btn-save"><i class="fa-solid fa-check"></i> حفظ المصروف</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

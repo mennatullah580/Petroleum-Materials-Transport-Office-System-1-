@@ -1,0 +1,60 @@
+﻿@page
+@model Petroleum_Materials_Transport_Office_System.Pages.Accounts.AccountsManagementModel
+@{
+    ViewData["Title"] = "إدارة الحسابات";
+}
+
+<link rel="stylesheet" href="~/css/accounts.css" />
+
+<div class="container">
+    <h2>صفحة إدارة الحسابات</h2>
+    <div class="box">
+        <div class="title">إدارة الحسابات</div>
+
+        <div class="tabs">
+            <a asp-page="./AccountsManagement" asp-route-tab="customers"
+               class="@(Model.ActiveTab == "customers" ? "active" : "")">
+                العملاء
+            </a>
+            <a asp-page="./AccountsManagement" asp-route-tab="suppliers"
+               class="@(Model.ActiveTab == "suppliers" ? "active" : "")">
+                الموردين
+            </a>
+        </div>
+
+        <form method="get">
+            <input type="hidden" name="tab" value="@Model.ActiveTab" />
+            <div class="search-area">
+                <input name="search" value="@Model.SearchText" placeholder="Search" />
+                <button type="submit">بحث</button>
+            </div>
+        </form>
+
+        <div class="data-table-wrapper">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>الرقم</th>
+                        <th>اسم الشركة</th>
+                        <th>العنوان</th>
+                        <th>معلومات الاتصال</th>
+                        <th>الرصيد</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.DisplayedList)
+                    {
+                        <tr>
+                            <td>@item.ID</td>
+                            <td>@item.CompanyName</td>
+                            <td>@item.Address</td>
+                            <td>@item.ContactInfo</td>
+                            <td>@item.Balance</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+

@@ -1,0 +1,283 @@
+﻿@page
+@model Petroleum_Materials_Transport_Office_System.Pages.Finance.ReportsModel
+@{
+    Layout = null;
+    ViewData["Title"] = "التقارير";
+}
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>@ViewData["Title"]</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --navy: #2F4156;
+            --teal: #567C8D;
+            --beige: #F5EFEB;
+            --sky-blue: #C8D9E6;
+            --white: #FFFFFF;
+        }
+
+        body {
+            background-color: var(--sky-blue);
+            font-family: 'Cairo', sans-serif;
+            margin: 0;
+            padding: 20px;
+            direction: rtl;
+        }
+
+        .main-wrapper {
+            background: linear-gradient(135deg, var(--teal) 0%, #4a6b7c 100%);
+            padding: 25px 25px 0 25px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            min-height: 85vh;
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Tabs Styles (Merged) */
+        .tabs-nav {
+            display: flex;
+            gap: 5px;
+            padding-right: 0;
+            margin-bottom: 0;
+            position: relative;
+            z-index: 10;
+            align-items: flex-end;
+        }
+
+        .tab-link {
+            background-color: rgba(255,255,255,0.7);
+            border: none;
+            padding: 12px 30px;
+            font-weight: 700;
+            color: var(--navy);
+            border-radius: 12px 12px 0 0;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.3s;
+        }
+
+            .tab-link:hover {
+                background-color: var(--white);
+                transform: translateY(-2px);
+            }
+
+            .tab-link.active-tab {
+                background-color: var(--beige);
+                color: var(--navy);
+                padding-bottom: 20px;
+                margin-bottom: -10px;
+                z-index: 20;
+                position: relative;
+                box-shadow: 0 -5px 10px rgba(0,0,0,0.05);
+            }
+
+                .tab-link.active-tab::after {
+                    content: '';
+                    position: absolute;
+                    bottom: -5px;
+                    left: 0;
+                    right: 0;
+                    height: 10px;
+                    background-color: var(--beige);
+                    z-index: 25;
+                }
+
+        /* Content Card */
+        .content-card {
+            background-color: var(--beige);
+            padding: 35px;
+            border-radius: 20px;
+            min-height: 600px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            position: relative;
+            z-index: 5;
+            margin-top: -1px;
+        }
+
+        /* Reports Form Styles */
+        .form-box {
+            background-color: var(--navy);
+            padding: 40px;
+            border-radius: 20px;
+            color: var(--white);
+            max-width: 1100px;
+            margin: 0 auto;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.25);
+        }
+
+        .report-main-label {
+            font-size: 20px;
+            margin-bottom: 15px;
+            display: block;
+            color: var(--sky-blue);
+            font-weight: bold;
+        }
+
+        .report-select {
+            padding: 16px;
+            font-size: 16px;
+            background-color: #fcfcfc;
+            border-radius: 10px;
+            border: 3px solid transparent;
+            width: 100%;
+            color: var(--navy);
+            font-family: 'Cairo';
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+            .report-select:focus {
+                border-color: var(--teal);
+                outline: none;
+            }
+
+        .filters-container {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 25px;
+            border-radius: 15px;
+            margin-top: 30px;
+        }
+
+        .filters-title {
+            color: var(--sky-blue);
+            margin-top: 0;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            font-size: 18px;
+        }
+
+        /* --- MODIFIED GRID GAP HERE --- */
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 40px; /* Increased from 20px to 40px to separate boxes */
+        }
+
+        .filter-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #ddd;
+            font-size: 14px;
+        }
+
+        .filter-group input, .filter-group select {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: none;
+            background: #fcfcfc;
+            color: var(--navy);
+            font-family: 'Cairo';
+        }
+
+        .btn-generate {
+            background-color: var(--teal);
+            color: var(--white);
+            padding: 15px 60px;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 18px;
+            margin-top: 40px;
+            width: 100%;
+            max-width: 300px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transition: 0.3s;
+        }
+
+            .btn-generate:hover {
+                background-color: #6a8d9e;
+                transform: translateY(-3px);
+            }
+    </style>
+</head>
+<body>
+
+    <div class="main-wrapper">
+        <div class="tabs-nav">
+            <a href="/Finance/Invoices" class="tab-link"><i class="fa-solid fa-file-invoice"></i> الفواتير</a>
+            <a href="/Finance/Payments" class="tab-link"><i class="fa-solid fa-money-bill-wave"></i> المدفوعات</a>
+            <a href="/Finance/Expenses" class="tab-link"><i class="fa-solid fa-wallet"></i> المصروفات</a>
+            <a href="/Finance/Reports" class="tab-link active-tab"><i class="fa-solid fa-chart-pie"></i> التقارير</a>
+        </div>
+
+        <div class="content-card">
+            <div class="form-box">
+                <h3 style="color:white; border-bottom:1px solid rgba(255,255,255,0.2); padding-bottom:15px; margin-bottom:30px;">
+                    <i class="fa-solid fa-print"></i> استخراج التقارير
+                </h3>
+
+                <form method="post">
+                    <div style="margin-bottom: 25px;">
+                        <label class="report-main-label"><i class="fa-solid fa-list"></i> اختر نوع التقرير</label>
+                        <select class="report-select" name="ReportType">
+                            <option value="" disabled selected>-- اختر التقرير المطلوب --</option>
+                            <option value="debts">ديون العملاء</option>
+                            <option value="prov_bal">أرصدة المقاولين</option>
+                            <option value="comp_acc">كشف حساب شامل</option>
+                            <option value="prov_acc">حساب مقاولين</option>
+                            <option value="shortage">بيان العجوزات</option>
+                            <option value="profit">تقرير الأرباح</option>
+                            <option value="movement">ملخص حركة مقاول</option>
+                            <option value="fuel_sum">ملخص مالي حسب الوقود</option>
+                            <option value="details">تقرير تفصيلي</option>
+                        </select>
+                    </div>
+
+                    <div class="filters-container">
+                        <h4 class="filters-title"><i class="fa-solid fa-filter"></i> تصفية النتائج</h4>
+
+                        <div class="filter-grid">
+                            <div class="filter-group">
+                                <label>من تاريخ (From)</label>
+                                <input type="date" name="FromDate">
+                            </div>
+                            <div class="filter-group">
+                                <label>إلى تاريخ (To)</label>
+                                <input type="date" name="ToDate">
+                            </div>
+                            <div class="filter-group">
+                                <label>نوع الوقود (Fuel)</label>
+                                <select name="FuelType"><option value="All">الكل</option><option value="Diesel">ديزل</option></select>
+                            </div>
+
+                            <div class="filter-group">
+                                <label>العميل (Customer)</label>
+                                <select name="CustomerId"><option value="All">الكل</option></select>
+                            </div>
+                            <div class="filter-group">
+                                <label>المقاول (Provider)</label>
+                                <select name="ProviderId"><option value="All">الكل</option></select>
+                            </div>
+                            <div class="filter-group">
+                                <label>الموقع (Location)</label>
+                                <select name="Location"><option value="All">الكل</option></select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="text-align: center;">
+                        <button type="submit" class="btn-generate"><i class="fa-solid fa-file-export"></i> عرض التقرير</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

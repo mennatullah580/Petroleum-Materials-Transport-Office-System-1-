@@ -1,0 +1,313 @@
+﻿@page
+@model Petroleum_Materials_Transport_Office_System.Pages.Master_Lists.FuelManagementModel
+@{
+    ViewData["Title"] = "إدارة الوقود والتوريدات";
+}
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة الوقود والتوريدات</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- لوحة الألوان الموحدة --- */
+        :root {
+            --color-navy: #2F4156;
+            --color-teal: #567C8D;
+            --color-sky-blue: #C8D9E6;
+            --color-beige: #F5EFEB;
+            --color-white: #FFFFFF;
+        }
+
+        body {
+            background-color: var(--color-sky-blue);
+            font-family: 'Cairo', sans-serif;
+            padding: 20px;
+        }
+
+        .master-card {
+            background-color: var(--color-teal);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            min-height: 80vh;
+        }
+
+        .page-header {
+            color: var(--color-white);
+            margin-bottom: 25px;
+            border-bottom: 2px solid rgba(255,255,255,0.2);
+            padding-bottom: 15px;
+        }
+
+        /* تنسيق التبويبات */
+        .nav-pills .nav-link {
+            background-color: rgba(255,255,255,0.2);
+            color: var(--color-white);
+            margin-left: 10px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+            .nav-pills .nav-link.active {
+                background-color: var(--color-beige);
+                color: var(--color-navy);
+                transform: translateY(-2px);
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            }
+
+            .nav-pills .nav-link:hover:not(.active) {
+                background-color: rgba(255,255,255,0.4);
+            }
+
+        .content-area {
+            background-color: var(--color-beige);
+            border-radius: 12px;
+            padding: 25px;
+            margin-top: 20px;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        /* الفلاتر */
+        .filter-box {
+            background-color: var(--color-navy);
+            color: var(--color-white);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+        }
+
+        .form-control, .form-select {
+            border: none;
+            border-radius: 6px;
+        }
+
+        /* الجداول */
+        .custom-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+            .custom-table thead {
+                background-color: var(--color-navy);
+                color: var(--color-white);
+                white-space: nowrap;
+            }
+
+            .custom-table th, .custom-table td {
+                padding: 12px 15px;
+                border-bottom: 1px solid #ddd;
+                text-align: center;
+                vertical-align: middle;
+            }
+
+                .custom-table th:first-child {
+                    border-top-right-radius: 8px;
+                }
+
+                .custom-table th:last-child {
+                    border-top-left-radius: 8px;
+                }
+
+            .custom-table tbody tr:hover {
+                background-color: #e9e2de;
+                cursor: pointer;
+            }
+
+        /* الأزرار */
+        .btn-action {
+            background-color: var(--color-teal);
+            color: white;
+            border: none;
+            padding: 5px 15px;
+            border-radius: 5px;
+            font-size: 0.9em;
+            transition: background-color 0.3s;
+        }
+
+            .btn-action:hover {
+                background-color: var(--color-navy);
+                color: white;
+            }
+
+        .btn-search {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        /* إعدادات الطباعة */
+        @@media print {
+            body {
+                background-color: white;
+            }
+
+            .master-card {
+                background-color: white;
+                box-shadow: none;
+                padding: 0;
+            }
+
+            .filter-box, .nav-pills, .no-print {
+                display: none !important;
+            }
+
+            .content-area {
+                border: none;
+                padding: 0;
+            }
+
+            .custom-table th {
+                background-color: #ddd !important;
+                color: black !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container-fluid">
+        <div class="master-card">
+
+            <div class="d-flex justify-content-between align-items-center page-header">
+                <div>
+                    <h2 class="m-0"><i class="fas fa-gas-pump ms-2"></i> إدارة الوقود والتوريدات</h2>
+                    <small class="text-white-50">أسعار الوقود، أوامر الشغل، والحسابات المالية</small>
+                </div>
+                <div>
+                    <button class="btn btn-light no-print" onclick="window.print()">
+                        <i class="fas fa-print ms-1"></i> طباعة القائمة
+                    </button>
+                </div>
+            </div>
+
+            <ul class="nav nav-pills mb-3 no-print" id="pills-tab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="pills-orders-tab" data-bs-toggle="pill" data-bs-target="#pills-orders" type="button" role="tab">
+                        <i class="fas fa-file-invoice-dollar ms-1"></i> أوامر الشغل
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="pills-fuel-tab" data-bs-toggle="pill" data-bs-target="#pills-fuel" type="button" role="tab">
+                        <i class="fas fa-filter ms-1"></i> أنواع الوقود
+                    </button>
+                </li>
+            </ul>
+
+            <div class="content-area">
+                <div class="tab-content" id="pills-tabContent">
+
+                    <div class="tab-pane fade show active" id="pills-orders" role="tabpanel">
+                        <div class="filter-box row g-3 no-print">
+                            <div class="col-md-2">
+                                <label>رقم الفاتورة</label>
+                                <input type="text" class="form-control" placeholder="">
+                            </div>
+                            <div class="col-md-2">
+                                <label>من تاريخ</label>
+                                <input type="date" class="form-control">
+                            </div>
+                            <div class="col-md-2">
+                                <label>إلى تاريخ</label>
+                                <input type="date" class="form-control">
+                            </div>
+                            <div class="col-md-2">
+                                <label>العميل / المقاول</label>
+                                <select class="form-select">
+                                    <option>الكل</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label>حالة الطلب</label>
+                                <select class="form-select">
+                                    <option>الكل</option>
+                                    <option>مكتمل</option>
+                                    <option>قيد التنفيذ</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2 align-self-end">
+                                <button class="btn btn-action btn-search w-100">بحث</button>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table custom-table">
+                                <thead>
+                                    <tr>
+                                        <th>رقم الفاتورة</th>
+                                        <th>التاريخ</th>
+                                        <th>العميل</th>
+                                        <th>المقاول</th>
+                                        <th>جهة التحميل</th>
+                                        <th>جهة التفريغ</th>
+                                        <th>الكمية (لتر)</th>
+                                        <th>العجز</th>
+                                        <th>الصافي</th>
+                                        <th>الحالة</th>
+                                        <th class="no-print">إجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade" id="pills-fuel" role="tabpanel">
+                        <div class="filter-box row g-3 no-print">
+                            <div class="col-md-4">
+                                <label>بحث باسم النوع</label>
+                                <input type="text" class="form-control" placeholder="">
+                            </div>
+                            <div class="col-md-3">
+                                <label>الحالة</label>
+                                <select class="form-select">
+                                    <option>الكل</option>
+                                    <option>نشط</option>
+                                    <option>غير نشط</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2 align-self-end">
+                                <button class="btn btn-action btn-search w-100">بحث</button>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table custom-table">
+                                <thead>
+                                    <tr>
+                                        <th>اسم النوع</th>
+                                        <th>سعر الشركة</th>
+                                        <th>سعر المقاول</th>
+                                        <th>ضريبة الخصم (%)</th>
+                                        <th>دمغة نسبية (%)</th>
+                                        <th>رسوم GPS</th>
+                                        <th>الحالة</th>
+                                        <th class="no-print">إجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
