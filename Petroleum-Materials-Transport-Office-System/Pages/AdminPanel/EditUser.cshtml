@@ -302,7 +302,6 @@
             <div class="panel-header">تعديل/إضافة مستخدم</div>
 
             <form method="post">
-                <!-- Basic Info -->
                 <div class="section-title">معلومات المستخدم</div>
                 <div class="form-row">
                     <div class="form-group">
@@ -326,7 +325,6 @@
                     </div>
                 </div>
 
-                <!-- Role & Department -->
                 <div class="section-title">الصلاحيات الوظيفية</div>
                 <div class="form-row">
                     <div class="form-group">
@@ -337,128 +335,39 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label">القسم</label>
-                        <input type="text" class="form-control" asp-for="User.Department" placeholder="أدخل القسم" />
+                        <select class="form-select" asp-for="User.Department" asp-items="Model.Departments">
+                            <option value="">اختر القسم</option>
+                        </select>
                     </div>
                 </div>
 
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="form-label">الفرع المسند</label>
-                        <input type="text" class="form-control" asp-for="User.AssignedBranch" placeholder="أدخل الفرع" />
-                    </div>
-                    <div class="form-group"></div>
-                </div>
-
-                <!-- Password -->
                 <div class="section-title">كلمة المرور</div>
                 <div class="form-row">
                     <div class="form-group">
                         <label class="form-label">كلمة المرور</label>
-                        <input type="password" class="form-control" asp-for="User.Password" placeholder="أدخل كلمة المرور" />
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">تأكيد كلمة المرور</label>
-                        <input type="password" class="form-control" asp-for="User.ConfirmPassword" placeholder="أعد إدخال كلمة المرور" />
+                        <input type="password" class="form-control" asp-for="User.Password" placeholder="أدخل كلمة المرور (اترك فارغًا للإبقاء على الحالية)" />
                     </div>
                 </div>
 
-                <!-- Detailed Permissions -->
-                <div class="section-title">الصلاحيات التفصيلية</div>
-                <div class="permissions-box">
-                    <div class="permission-group">
-                        <div class="permission-group-title">إدارة الطلبات</div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" asp-for="Permissions.CanViewOrders" id="viewOrders" />
-                            <label class="form-check-label" for="viewOrders">عرض الطلبات</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" asp-for="Permissions.CanCreateOrders" id="createOrders" />
-                            <label class="form-check-label" for="createOrders">إنشاء طلبات جديدة</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" asp-for="Permissions.CanEditOrders" id="editOrders" />
-                            <label class="form-check-label" for="editOrders">تعديل الطلبات</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" asp-for="Permissions.CanDeleteOrders" id="deleteOrders" />
-                            <label class="form-check-label" for="deleteOrders">حذف الطلبات</label>
-                        </div>
-                    </div>
-
-                    <div class="permission-group">
-                        <div class="permission-group-title">التقارير والماليات</div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" asp-for="Permissions.CanViewFinancialReports" id="viewFinReports" />
-                            <label class="form-check-label" for="viewFinReports">عرض التقارير المالية</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" asp-for="Permissions.CanViewProfitReports" id="viewProfitReports" />
-                            <label class="form-check-label" for="viewProfitReports">عرض تقارير الأرباح</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" asp-for="Permissions.CanExportReports" id="exportReports" />
-                            <label class="form-check-label" for="exportReports">تصدير التقارير</label>
-                        </div>
-                    </div>
-
-                    <div class="permission-group">
-                        <div class="permission-group-title">إدارة الحسابات</div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" asp-for="Permissions.CanAccessContractors" id="accessContractors" />
-                            <label class="form-check-label" for="accessContractors">الوصول لحسابات المقاولين</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" asp-for="Permissions.CanEditContractors" id="editContractors" />
-                            <label class="form-check-label" for="editContractors">تعديل بيانات المقاولين</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" asp-for="Permissions.CanManagePayments" id="managePayments" />
-                            <label class="form-check-label" for="managePayments">إدارة المدفوعات</label>
-                        </div>
-                    </div>
-
-                    <div class="permission-group">
-                        <div class="permission-group-title">إعدادات النظام</div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" asp-for="Permissions.CanManageFuelPrices" id="manageFuel" />
-                            <label class="form-check-label" for="manageFuel">إدارة أسعار الوقود</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" asp-for="Permissions.CanManageUsers" id="manageUsers" />
-                            <label class="form-check-label" for="manageUsers">إدارة المستخدمين</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" asp-for="Permissions.CanManageDeductions" id="manageDeductions" />
-                            <label class="form-check-label" for="manageDeductions">إدارة الاستقطاعات</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" asp-for="Permissions.CanViewSystemLogs" id="viewLogs" />
-                            <label class="form-check-label" for="viewLogs">عرض سجلات النظام</label>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Status -->
-                <div class="section-title">الحالة</div>
-                <div class="radio-group">
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" asp-for="User.IsActive" value="true" id="active" />
-                        <label class="form-check-label" for="active">نشط</label>
-                    </div>
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" asp-for="User.IsActive" value="false" id="inactive" />
-                        <label class="form-check-label" for="inactive">غير نشط</label>
-                    </div>
-                </div>
-
-                <!-- Buttons -->
+                <!-- Save / Cancel Buttons -->
                 <div class="action-buttons">
-                    <button type="submit" class="btn btn-save">حفظ</button>
-                    <a href="/AdminPanel/UserManagement" class="btn btn-cancel">إلغاء</a>
+                    <button type="submit" class="btn-save">حفظ</button>
+                    <a href="/AdminPanel/UserManagement" class="btn-cancel">إلغاء</a>
                 </div>
+
+                @if (!ViewData.ModelState.IsValid)
+                {
+                    <div class="text-danger mt-3">
+                        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                        {
+                            <div>@error.ErrorMessage</div>
+                        }
+                    </div>
+                }
             </form>
-        </div>
-    </div>
+         
+            </div>
+            </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>

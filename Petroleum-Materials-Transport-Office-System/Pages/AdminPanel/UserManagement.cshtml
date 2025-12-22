@@ -1,5 +1,5 @@
 ﻿@page
-@model Petroleum_Materials_Transport_Office_System.Pages.Admin_Panel.User_ManagementModel
+@model Petroleum_Materials_Transport_Office_System.Pages.AdminPanel.UserManagementModel
 
 @{
     ViewData["Title"] = "لوحة التحكم";
@@ -93,14 +93,16 @@
             }
     </style>
 </head>
+
 <body>
-    <div class="container mt-4 ">
+    <div class="container mt-4">
         <div class="admin-panel">
             <div class="panel-header">لوحة التحكم</div>
 
             <!-- Tabs -->
             <ul class="nav nav-tabs mb-3" role="tablist">
                 <li class="nav-item" role="presentation">
+                    <!-- ❌ FIX: Remove space in URL -->
                     <a class="nav-link active" href="/AdminPanel/UserManagement">إدارة المستخدمين</a>
                 </li>
                 <li class="nav-item" role="presentation">
@@ -109,8 +111,8 @@
             </ul>
 
             <div class="tab-content tab-container">
-                <!-- User Management Tab -->
                 <div class="tab-pane fade show active" id="users" role="tabpanel">
+                    <!-- ❌ FIX: Remove space in URL -->
                     <a href="/AdminPanel/EditUser" class="btn btn-add">إضافة مستخدم جديد</a>
 
                     <table class="table table-bordered table-striped">
@@ -121,7 +123,7 @@
                                 <th>اسم المستخدم</th>
                                 <th>الدور</th>
                                 <th>القسم</th>
-                                <th>الفرع المعين</th>
+                                <!-- ❌ REMOVED: <th>الفرع المعين</th> -->
                                 <th>إجراءات</th>
                             </tr>
                         </thead>
@@ -132,13 +134,24 @@
                                 {
                                     <tr>
                                         <td>@user.Id</td>
-                                        <td>@user.Name</td>
+                                        <td>@user.FullName</td>  <!-- ✅ Was user.Name -->
                                         <td>@user.Username</td>
                                         <td>@user.Role</td>
                                         <td>@user.Department</td>
-                                        <td>@user.Branch</td>
+                                        <!-- ❌ NO Branch -->
+
                                         <td>
-                                            <button class="btn btn-action">حذف</button>
+                                            <form method="post" style="display:inline;"
+                                                  onsubmit="return confirm('هل أنت متأكد أنك تريد حذف هذا المستخدم؟');">
+                                                <input type="hidden" name="id" value="@user.Id" />
+                                                <button type="submit" class="btn btn-action"
+                                                        asp-page-handler="Delete"
+                                                        style="background-color:#e74c3c; color:white;">
+                                                    حذف
+                                                </button>
+                                            </form>
+                                            
+                                            <!-- ✅ Fixed URL -->
                                             <a href="/AdminPanel/EditUser?id=@user.Id" class="btn btn-action">تعديل</a>
                                         </td>
                                     </tr>
@@ -147,19 +160,16 @@
                             else
                             {
                                 <tr>
-                                    <td colspan="7" class="text-center">لا توجد بيانات</td>
+                                    <td colspan="6" class="text-center">لا توجد بيانات</td> <!-- ✅ Was 7 -->
                                 </tr>
                             }
                         </tbody>
                     </table>
                 </div>
-
-
             </div>
         </div>
     </div>
 
-    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
