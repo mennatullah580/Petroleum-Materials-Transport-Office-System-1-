@@ -1,11 +1,14 @@
 ﻿using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Data.SqlClient;
 using System.Collections.Generic;
+using AccountsManagement.Models;
 
-// UPDATED NAMESPACE TO MATCH YOUR PROJECT
 namespace Petroleum_Materials_Transport_Office_System.Pages.Accounts
 {
     public class AccountsManagementModel : PageModel
     {
+        private readonly IConfiguration _configuration;
         public string ActiveTab { get; set; } = "customers";
         public string SearchText { get; set; }
 
@@ -13,23 +16,77 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.Accounts
         public List<AccountRecord> Suppliers = new List<AccountRecord>();
         public List<AccountRecord> DisplayedList { get; set; } = new List<AccountRecord>();
 
-        public AccountsManagementModel()
+        public AccountsManagementModel(IConfiguration configuration)
         {
-            // Dummy Data
-            Customers.Add(new AccountRecord { ID = 1, CompanyName = "التوحيد والنور", Address = "الحي الاول", ContactInfo = "111", Balance = 200 });
-            Customers.Add(new AccountRecord { ID = 2, CompanyName = "الايمان والمستقبل", Address = "الحي الثاني", ContactInfo = "222", Balance = 400 });
-
-            Suppliers.Add(new AccountRecord { ID = 10, CompanyName = "احمد", Address = "شارع 10", ContactInfo = "555", Balance = 900 });
-            Suppliers.Add(new AccountRecord { ID = 11, CompanyName = "محمد", Address = "شارع 20", ContactInfo = "666", Balance = 300 });
+            _configuration = configuration;
         }
 
         public void OnGet(string tab, string search)
         {
-            if (!string.IsNullOrEmpty(tab)) ActiveTab = tab;
+            ActiveTab = string.IsNullOrEmpty(tab) ? "customers" : tab;
             SearchText = search;
+
+            LoadCustomers();
+            LoadSuppliers();
 
             var targetList = (ActiveTab == "customers") ? Customers : Suppliers;
             DisplayedList = FilterList(targetList);
+        }
+
+        private void LoadCustomers()
+        {
+            string connectionString = _configuration.GetConnectionString("PetroleumTransportDB");
+
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                conn.Open();
+                string sql = "SELECT Company_ID AS ID, Company_Name AS CompanyName, Address, Contact_Info AS ContactInfo, Net_Balance AS Balance FROM Company";
+
+                using (SqlCommand cmd = new SqlCommand(sql, conn))
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    Customers.Clear();
+                    while (reader.Read())
+                    {
+                        Customers.Add(new AccountRecord
+                        {
+                            ID = reader.GetInt32(reader.GetOrdinal("ID")),
+                            CompanyName = reader.GetString(reader.GetOrdinal("CompanyName")),
+                            Address = reader.GetString(reader.GetOrdinal("Address")),
+                            ContactInfo = reader.GetString(reader.GetOrdinal("ContactInfo")),
+                            Balance = reader.GetDecimal(reader.GetOrdinal("Balance"))
+                        });
+                    }
+                }
+            }
+        }
+
+        private void LoadSuppliers()
+        {
+            string connectionString = _configuration.GetConnectionString("PetroleumTransportDB");
+
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                conn.Open();
+                string sql = "SELECT Provider_ID AS ID, Provider_Name AS CompanyName, '' AS Address, Contact_Info AS ContactInfo, Total_Work_Amount AS Balance FROM Provider";
+
+                using (SqlCommand cmd = new SqlCommand(sql, conn))
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    Suppliers.Clear();
+                    while (reader.Read())
+                    {
+                        Suppliers.Add(new AccountRecord
+                        {
+                            ID = reader.GetInt32(reader.GetOrdinal("ID")),
+                            CompanyName = reader.GetString(reader.GetOrdinal("CompanyName")),
+                            Address = reader.GetString(reader.GetOrdinal("Address")), // هيبقى فارغ ''
+                            ContactInfo = reader.GetString(reader.GetOrdinal("ContactInfo")),
+                            Balance = reader.GetDecimal(reader.GetOrdinal("Balance"))
+                        });
+                    }
+                }
+            }
         }
 
         private List<AccountRecord> FilterList(List<AccountRecord> list)
@@ -39,7 +96,7 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.Accounts
             var result = new List<AccountRecord>();
             foreach (var rec in list)
             {
-                if (rec.CompanyName != null &&
+                if (!string.IsNullOrEmpty(rec.CompanyName) &&
                     rec.CompanyName.ToLower().Contains(SearchText.ToLower()))
                 {
                     result.Add(rec);
@@ -49,7 +106,6 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.Accounts
         }
     }
 
-    // Class definition included here for safety
     public class AccountRecord
     {
         public int ID { get; set; }
