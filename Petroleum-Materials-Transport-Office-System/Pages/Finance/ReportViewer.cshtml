@@ -1,0 +1,144 @@
+﻿@page
+@model Petroleum_Materials_Transport_Office_System.Pages.Finance.ReportViewerModel
+@{
+    Layout = null;
+    ViewData["Title"] = Model.ReportTitle;
+}
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>@Model.ReportTitle</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: #f4f6f9;
+            padding: 20px;
+            direction: rtl;
+        }
+
+        .report-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+            .header h1 {
+                color: #2F4156;
+                margin: 0;
+            }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+
+        th {
+            background-color: #2F4156;
+            color: white;
+            padding: 12px;
+            text-align: right;
+        }
+
+        td {
+            border-bottom: 1px solid #eee;
+            padding: 10px;
+        }
+
+        .total-box {
+            text-align: left;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #2F4156;
+            padding-top: 10px;
+            border-top: 2px solid #2F4156;
+        }
+
+        .print-btn {
+            background: #567C8D;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            float: left;
+        }
+
+        /* FIXED: Note the double @@ below */
+        @@media print {
+            .print-btn {
+                display: none;
+            }
+
+            body {
+                background-color: white;
+            }
+
+            .report-container {
+                box-shadow: none;
+                padding: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="report-container">
+        <button onclick="window.print()" class="print-btn"><i class="fa-solid fa-print"></i> طباعة</button>
+
+        <div class="header">
+            <h1>@Model.ReportTitle</h1>
+            <p>نظام إدارة نقل المواد البترولية</p>
+        </div>
+
+        @if (Model.ReportData != null && Model.ReportData.Rows.Count > 0)
+        {
+            <table>
+                <thead>
+                    <tr>
+                        @foreach (System.Data.DataColumn col in Model.ReportData.Columns)
+                        {
+                            <th>@col.ColumnName</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (System.Data.DataRow row in Model.ReportData.Rows)
+                    {
+                        <tr>
+                            @foreach (var item in row.ItemArray)
+                            {
+                                <td>@item</td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <p style="text-align:center; color:#999;">لا توجد بيانات للعرض</p>
+        }
+
+        <div class="total-box">
+            الإجمالي الكلي: @Model.TotalSum.ToString("N2") EGP
+        </div>
+    </div>
+
+</body>
+</html>

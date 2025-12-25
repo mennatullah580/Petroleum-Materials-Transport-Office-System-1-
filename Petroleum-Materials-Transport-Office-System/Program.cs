@@ -1,9 +1,13 @@
 
+using Petroleum_Materials_Transport_Office_System.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddScoped<UserRepository>();
+builder.Services.AddSingleton<ActionLogger>();
+builder.Services.AddSession();
 
 
 var app = builder.Build();
@@ -21,6 +25,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+app.UseSession();
 
 app.UseAuthorization();
 app.Use(async (context, next) =>

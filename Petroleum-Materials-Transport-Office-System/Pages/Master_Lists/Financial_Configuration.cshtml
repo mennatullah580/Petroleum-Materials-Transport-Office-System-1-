@@ -16,7 +16,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
 
     <style>
-        /* --- لوحة الألوان الموحدة (Standard Palette) --- */
         :root {
             --color-navy: #2F4156;
             --color-teal: #567C8D;
@@ -46,7 +45,7 @@
             padding-bottom: 15px;
         }
 
-        /* تنسيق التبويبات */
+
         .nav-pills .nav-link {
             background-color: rgba(255,255,255,0.2);
             color: var(--color-white);
@@ -75,7 +74,7 @@
             border: 1px solid rgba(0,0,0,0.05);
         }
 
-        /* الفلاتر */
+
         .filter-box {
             background-color: var(--color-navy);
             color: var(--color-white);
@@ -89,7 +88,7 @@
             border-radius: 6px;
         }
 
-        /* الجداول */
+
         .custom-table {
             width: 100%;
             border-collapse: separate;
@@ -122,7 +121,7 @@
                 cursor: pointer;
             }
 
-        /* الأزرار */
+
         .btn-action {
             background-color: var(--color-teal);
             color: white;
@@ -146,7 +145,7 @@
             font-size: 1rem;
         }
 
-        /* إعدادات الطباعة */
+
         @@media print {
             body {
                 background-color: white;
@@ -193,17 +192,20 @@
 
             <ul class="nav nav-pills mb-3 no-print" id="pills-tab" role="tablist">
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="pills-treasury-tab" data-bs-toggle="pill" data-bs-target="#pills-treasury" type="button" role="tab">
+                    <button class="nav-link @(Model.ActiveTab == "treasury" ? "active" : "")"
+                            id="pills-treasury-tab" data-bs-toggle="pill" data-bs-target="#pills-treasury" type="button" role="tab">
                         <i class="fas fa-university ms-1"></i> الخزائن والبنوك
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="pills-expenses-tab" data-bs-toggle="pill" data-bs-target="#pills-expenses" type="button" role="tab">
+                    <button class="nav-link @(Model.ActiveTab == "expenses" ? "active" : "")"
+                            id="pills-expenses-tab" data-bs-toggle="pill" data-bs-target="#pills-expenses" type="button" role="tab">
                         <i class="fas fa-list-ul ms-1"></i> بنود المصروفات
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="pills-cost-centers-tab" data-bs-toggle="pill" data-bs-target="#pills-cost-centers" type="button" role="tab">
+                    <button class="nav-link @(Model.ActiveTab == "cost-centers" ? "active" : "")"
+                            id="pills-cost-centers-tab" data-bs-toggle="pill" data-bs-target="#pills-cost-centers" type="button" role="tab">
                         <i class="fas fa-sitemap ms-1"></i> مراكز التكلفة
                     </button>
                 </li>
@@ -212,24 +214,26 @@
             <div class="content-area">
                 <div class="tab-content" id="pills-tabContent">
 
-                    <div class="tab-pane fade show active" id="pills-treasury" role="tabpanel">
-                        <div class="filter-box row g-3 no-print">
-                            <div class="col-md-4">
-                                <label>بحث باسم الخزينة / البنك</label>
-                                <input type="text" class="form-control" placeholder="">
+                    <div class="tab-pane fade @(Model.ActiveTab == "treasury" ? "show active" : "")" id="pills-treasury" role="tabpanel">
+                        <form method="get">
+                            <div class="filter-box row g-3 no-print">
+                                <div class="col-md-4">
+                                    <label>بحث باسم الخزينة / البنك</label>
+                                    <input type="text" name="SearchTreasury" value="@Model.SearchTreasury" class="form-control" placeholder="">
+                                </div>
+                                <div class="col-md-3">
+                                    <label>النوع</label>
+                                    <select class="form-select" name="FilterTreasuryType">
+                                        <option value="">الكل</option>
+                                        <option value="Safe" selected="@(Model.FilterTreasuryType == "Safe" ? "selected" : null)">خزينة نقدية</option>
+                                        <option value="Bank" selected="@(Model.FilterTreasuryType == "Bank" ? "selected" : null)">حساب بنكي</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2 align-self-end">
+                                    <button type="submit" class="btn btn-action btn-search w-100">بحث</button>
+                                </div>
                             </div>
-                            <div class="col-md-3">
-                                <label>النوع</label>
-                                <select class="form-select">
-                                    <option>الكل</option>
-                                    <option>خزينة نقدية</option>
-                                    <option>حساب بنكي</option>
-                                </select>
-                            </div>
-                            <div class="col-md-2 align-self-end">
-                                <button class="btn btn-action btn-search w-100">بحث</button>
-                            </div>
-                        </div>
+                        </form>
 
                         <div class="table-responsive">
                             <table class="table custom-table">
@@ -246,30 +250,74 @@
                                     </tr>
                                 </thead>
                                 <tbody>
+                                    @if (Model.Treasuries.Count > 0)
+                                    {
+                                        foreach (var item in Model.Treasuries)
+                                        {
+                                            <tr>
+                                                <td>@item.ID</td>
+                                                <td class="fw-bold">@item.Name</td>
+                                                <td>
+                                                    @if (item.Type == "Safe")
+                                                    {
+                                                        <span class="badge bg-success">خزينة</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-primary">بنك</span>
+                                                    }
+                                                </td>
+                                                <td>@item.AccountNumber</td>
+                                                <td>@item.InitialBalance.ToString("N2")</td>
+                                                <td class="text-success fw-bold">@item.CurrentBalance.ToString("N2")</td>
+                                                <td>
+                                                    @if (item.Status == "Active")
+                                                    {
+                                                        <span class="badge bg-success">نشط</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-danger">موقوف</span>
+                                                    }
+                                                </td>
+                                                <td class="no-print">
+                                                    <button class="btn btn-action btn-sm"><i class="fas fa-edit"></i></button>
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <tr>
+                                            <td colspan="8" class="text-muted">لا توجد بيانات متاحة</td>
+                                        </tr>
+                                    }
                                 </tbody>
                             </table>
                         </div>
                     </div>
 
-                    <div class="tab-pane fade" id="pills-expenses" role="tabpanel">
-                        <div class="filter-box row g-3 no-print">
-                            <div class="col-md-4">
-                                <label>بحث عن بند مصروف</label>
-                                <input type="text" class="form-control" placeholder="">
+                    <div class="tab-pane fade @(Model.ActiveTab == "expenses" ? "show active" : "")" id="pills-expenses" role="tabpanel">
+                        <form method="get">
+                            <div class="filter-box row g-3 no-print">
+                                <div class="col-md-4">
+                                    <label>بحث عن بند مصروف</label>
+                                    <input type="text" name="SearchExpense" value="@Model.SearchExpense" class="form-control" placeholder="">
+                                </div>
+                                <div class="col-md-3">
+                                    <label>تصنيف المصروف</label>
+                                    <select class="form-select" name="FilterExpenseCategory">
+                                        <option value="">الكل</option>
+                                        <option value="مصروفات تشغيل" selected="@(Model.FilterExpenseCategory == "مصروفات تشغيل" ? "selected" : null)">مصروفات تشغيل</option>
+                                        <option value="مصروفات إدارية" selected="@(Model.FilterExpenseCategory == "مصروفات إدارية" ? "selected" : null)">مصروفات إدارية</option>
+                                        <option value="صيانة" selected="@(Model.FilterExpenseCategory == "صيانة" ? "selected" : null)">صيانة</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2 align-self-end">
+                                    <button type="submit" class="btn btn-action btn-search w-100">بحث</button>
+                                </div>
                             </div>
-                            <div class="col-md-3">
-                                <label>تصنيف المصروف</label>
-                                <select class="form-select">
-                                    <option>الكل</option>
-                                    <option>مصروفات تشغيل</option>
-                                    <option>مصروفات إدارية</option>
-                                    <option>صيانة</option>
-                                </select>
-                            </div>
-                            <div class="col-md-2 align-self-end">
-                                <button class="btn btn-action btn-search w-100">بحث</button>
-                            </div>
-                        </div>
+                        </form>
 
                         <div class="table-responsive">
                             <table class="table custom-table">
@@ -284,29 +332,62 @@
                                     </tr>
                                 </thead>
                                 <tbody>
+                                    @if (Model.Expenses.Count > 0)
+                                    {
+                                        foreach (var item in Model.Expenses)
+                                        {
+                                            <tr>
+                                                <td>@item.ID</td>
+                                                <td class="fw-bold">@item.Name</td>
+                                                <td>@item.Category</td>
+                                                <td>@item.ValueType</td>
+                                                <td>
+                                                    @if (item.IsReportable)
+                                                    {
+                                                        <i class="fas fa-check-circle text-success"></i>
+                                                    }
+                                                    else
+                                                    {
+                                                        <i class="fas fa-times-circle text-danger"></i>
+                                                    }
+                                                </td>
+                                                <td class="no-print">
+                                                    <button class="btn btn-action btn-sm"><i class="fas fa-edit"></i></button>
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <tr>
+                                            <td colspan="6" class="text-muted">لا توجد بيانات متاحة</td>
+                                        </tr>
+                                    }
                                 </tbody>
                             </table>
                         </div>
                     </div>
 
-                    <div class="tab-pane fade" id="pills-cost-centers" role="tabpanel">
-                        <div class="filter-box row g-3 no-print">
-                            <div class="col-md-4">
-                                <label>اسم مركز التكلفة</label>
-                                <input type="text" class="form-control" placeholder="">
+                    <div class="tab-pane fade @(Model.ActiveTab == "cost-centers" ? "show active" : "")" id="pills-cost-centers" role="tabpanel">
+                        <form method="get">
+                            <div class="filter-box row g-3 no-print">
+                                <div class="col-md-4">
+                                    <label>اسم مركز التكلفة</label>
+                                    <input type="text" name="SearchCostCenter" value="@Model.SearchCostCenter" class="form-control" placeholder="">
+                                </div>
+                                <div class="col-md-3">
+                                    <label>الحالة</label>
+                                    <select class="form-select" name="FilterCostCenterStatus">
+                                        <option value="">الكل</option>
+                                        <option value="Active" selected="@(Model.FilterCostCenterStatus == "Active" ? "selected" : null)">نشط</option>
+                                        <option value="Inactive" selected="@(Model.FilterCostCenterStatus == "Inactive" ? "selected" : null)">موقوف</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2 align-self-end">
+                                    <button type="submit" class="btn btn-action btn-search w-100">بحث</button>
+                                </div>
                             </div>
-                            <div class="col-md-3">
-                                <label>الحالة</label>
-                                <select class="form-select">
-                                    <option>الكل</option>
-                                    <option>نشط</option>
-                                    <option>موقوف</option>
-                                </select>
-                            </div>
-                            <div class="col-md-2 align-self-end">
-                                <button class="btn btn-action btn-search w-100">بحث</button>
-                            </div>
-                        </div>
+                        </form>
 
                         <div class="table-responsive">
                             <table class="table custom-table">
@@ -321,6 +402,37 @@
                                     </tr>
                                 </thead>
                                 <tbody>
+                                    @if (Model.CostCenters.Count > 0)
+                                    {
+                                        foreach (var item in Model.CostCenters)
+                                        {
+                                            <tr>
+                                                <td>@item.ID</td>
+                                                <td class="fw-bold">@item.Name</td>
+                                                <td>@item.Supervisor</td>
+                                                <td>@item.CreatedAt.ToString("yyyy-MM-dd")</td>
+                                                <td>
+                                                    @if (item.Status == "Active")
+                                                    {
+                                                        <span class="badge bg-success">نشط</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-danger">موقوف</span>
+                                                    }
+                                                </td>
+                                                <td class="no-print">
+                                                    <button class="btn btn-action btn-sm"><i class="fas fa-edit"></i></button>
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <tr>
+                                            <td colspan="6" class="text-muted">لا توجد بيانات متاحة</td>
+                                        </tr>
+                                    }
                                 </tbody>
                             </table>
                         </div>

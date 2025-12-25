@@ -1,0 +1,411 @@
+﻿@page "/OrdersManagement/EditOrder/{orderId:int}"
+@model Petroleum_Materials_Transport_Office_System.Pages.OrdersManagement.EditOrderModel
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8" />
+    <title>تعديل الطلب - @Model.Order?.InvoiceNumber</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #C8D9E6;
+            --card-bg-light: #F5EFEB;
+            --card-bg-dark: #2F4456;
+            --color-primary: #567C8D;
+            --color-secondary: #2F4456;
+            --color-text-light: white;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: var(--bg-primary);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1100px;
+            background: var(--card-bg-light);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border: 2px solid var(--color-primary);
+        }
+
+        h2 {
+            color: var(--color-secondary);
+            border-bottom: 3px solid var(--color-primary);
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+            font-weight: bold;
+        }
+
+        .form-section {
+            background: var(--bg-primary);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 2px solid var(--card-bg-light);
+        }
+
+            .form-section h5 {
+                color: var(--color-secondary);
+                margin-bottom: 15px;
+                font-weight: bold;
+                padding-bottom: 10px;
+                border-bottom: 2px solid var(--color-primary);
+            }
+
+        .form-control, .form-select {
+            border-radius: 10px;
+            border: 1px solid var(--color-primary);
+            padding: 10px 15px;
+            background: white;
+        }
+
+            .form-control:focus, .form-select:focus {
+                border-color: var(--color-primary);
+                box-shadow: 0 0 0 0.2rem rgba(86, 124, 141, 0.25);
+            }
+
+        .form-label {
+            font-weight: 600;
+            color: var(--color-secondary);
+            margin-bottom: 8px;
+        }
+
+        .calculated-field {
+            background: var(--card-bg-dark);
+            color: var(--color-text-light);
+            font-weight: bold;
+            border-color: var(--color-secondary);
+        }
+
+        .btn-save {
+            background: var(--card-bg-dark);
+            color: white;
+            border: none;
+            padding: 12px 40px;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+
+            .btn-save:hover {
+                background: var(--color-primary);
+                transform: translateY(-2px);
+                box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            }
+
+        .btn-cancel {
+            background: #e53e3e;
+            color: white;
+            border: none;
+            padding: 12px 40px;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+
+            .btn-cancel:hover {
+                background: #c53030;
+                color: white;
+                transform: translateY(-2px);
+            }
+
+        .actions-section {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid var(--color-primary);
+            display: flex;
+            gap: 15px;
+            justify-content: flex-start;
+        }
+
+        .alert {
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger">
+                <strong>خطأ!</strong> @TempData["Error"]
+            </div>
+        }
+
+        @if (Model.Order == null)
+        {
+            <div class="alert alert-danger">
+                <strong>خطأ!</strong> لم يتم العثور على الطلب.
+            </div>
+            <a href="/OrdersManagement" class="btn-cancel">رجوع للقائمة</a>
+        }
+        else
+        {
+            <h2>✏️ تعديل الطلب: @Model.Order.InvoiceNumber</h2>
+
+            <form method="post" id="editOrderForm">
+                <input type="hidden" asp-for="Order.OrderId" />
+
+                <div class="form-section">
+                    <h5>📋 المعلومات الأساسية</h5>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">رقم الفاتورة *</label>
+                            <input type="text" class="form-control" asp-for="Order.InvoiceNumber" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">تاريخ الطلب *</label>
+                            <input type="date" class="form-control" asp-for="Order.OrderDate" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">كود الجهة</label>
+                            <input type="text" class="form-control" asp-for="Order.LocationCode">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h5>📍 المواقع ونوع الوقود</h5>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">جهة التحميل *</label>
+                            <select class="form-select" asp-for="Order.LoadingLocation" required>
+                                <option value="">اختر...</option>
+                                @foreach (var location in Model.LoadingLocations)
+                                {
+                                    <option value="@location">@location</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">جهة التفريغ *</label>
+                            <select class="form-select" asp-for="Order.UnloadingLocation" required>
+                                <option value="">اختر...</option>
+                                @foreach (var location in Model.UnloadingLocations)
+                                {
+                                    <option value="@location">@location</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">نوع الوقود *</label>
+                            <select class="form-select" asp-for="Order.PetroleumType" required>
+                                <option value="">اختر...</option>
+                                @foreach (var type in Model.PetroleumTypes)
+                                {
+                                    <option value="@type">@type</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h5>📊 الكميات</h5>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">كمية التحميل (لتر) *</label>
+                            <input type="number" step="0.01" class="form-control" asp-for="Order.LoadingQuantity" id="loadingQty" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">كمية التفريغ (لتر) *</label>
+                            <input type="number" step="0.01" class="form-control" asp-for="Order.UnloadingQuantity" id="unloadingQty" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">العجز (لتر)</label>
+                            <input type="number" step="0.01" class="form-control calculated-field" asp-for="Order.Shortage" id="shortage" readonly>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h5>🚛 المقاول والسيارة</h5>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">المقاول *</label>
+                            <select class="form-select" asp-for="Order.ProviderName" required>
+                                <option value="">اختر...</option>
+                                @foreach (var provider in Model.Providers)
+                                {
+                                    <option value="@provider">@provider</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">رقم العربة *</label>
+                            <select class="form-select" asp-for="Order.VehiclePlateNumber" required>
+                                <option value="">اختر...</option>
+                                @foreach (var vehicle in Model.Vehicles)
+                                {
+                                    <option value="@vehicle">@vehicle</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">اسم السائق</label>
+                            <input type="text" class="form-control" asp-for="Order.DriverName">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h5>💰 الأسعار والمبالغ</h5>
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">سعر الشركة (للتر)</label>
+                            <input type="number" step="0.01" class="form-control" asp-for="Order.CompanyPrice" id="companyPrice">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">سعر المقاول (للتر)</label>
+                            <input type="number" step="0.01" class="form-control" asp-for="Order.ProviderPrice" id="providerPrice">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">إجمالي الشركة</label>
+                            <input type="number" step="0.01" class="form-control calculated-field" asp-for="Order.CompanyTotal" id="companyTotal" readonly>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">إجمالي المقاول</label>
+                            <input type="number" step="0.01" class="form-control calculated-field" asp-for="Order.ProviderTotal" id="providerTotal" readonly>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h5>📉 الخصومات</h5>
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">الضريبة (5%)</label>
+                            <input type="number" step="0.01" class="form-control calculated-field" asp-for="Order.TaxAmount" id="taxAmount" readonly>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">رسم الدمغة</label>
+                            <input type="number" step="0.01" class="form-control" asp-for="Order.StampFee" id="stampFee">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">رسوم GPS</label>
+                            <input type="number" step="0.01" class="form-control" asp-for="Order.GPSFee" id="gpsFee">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">إجمالي الخصومات</label>
+                            <input type="number" step="0.01" class="form-control calculated-field" asp-for="Order.TotalDeductions" id="totalDeductions" readonly>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h5>💵 الدفعات</h5>
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">السلفة</label>
+                            <input type="number" step="0.01" class="form-control" asp-for="Order.AdvancePayment" id="advancePayment">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">العهدة</label>
+                            <input type="number" step="0.01" class="form-control" asp-for="Order.CustodyAmount" id="custodyAmount">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">الصافي</label>
+                            <input type="number" step="0.01" class="form-control calculated-field" asp-for="Order.NetAmount" id="netAmount" readonly>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">المتبقي</label>
+                            <input type="number" step="0.01" class="form-control calculated-field" asp-for="Order.Balance" id="balance" readonly>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h5>📅 الحالة والتسليم</h5>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">تاريخ التسليم *</label>
+                            <input type="date" class="form-control" asp-for="Order.DeliveryDate" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">الحالة *</label>
+                            <select class="form-select" asp-for="Order.Status" required>
+                                <option value="">-- اختر الحالة --</option>
+                                <option value="Pending">Pending (قيد الانتظار)</option>
+                                <option value="In Transit">In Transit (قيد النقل)</option>
+                                <option value="Delivered">Delivered (تم التوصيل)</option>
+                                <option value="Cancelled">Cancelled (ملغي)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="actions-section">
+                    <button type="submit" class="btn-save">💾 حفظ التعديلات</button>
+                    <a href="/OrdersManagement" class="btn-cancel">❌ إلغاء</a>
+                </div>
+            </form>
+        }
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const loadingQty = document.getElementById('loadingQty');
+            const unloadingQty = document.getElementById('unloadingQty');
+            const shortage = document.getElementById('shortage');
+            const companyPrice = document.getElementById('companyPrice');
+            const providerPrice = document.getElementById('providerPrice');
+            const companyTotal = document.getElementById('companyTotal');
+            const providerTotal = document.getElementById('providerTotal');
+            const taxAmount = document.getElementById('taxAmount');
+            const stampFee = document.getElementById('stampFee');
+            const gpsFee = document.getElementById('gpsFee');
+            const totalDeductions = document.getElementById('totalDeductions');
+            const advancePayment = document.getElementById('advancePayment');
+            const custodyAmount = document.getElementById('custodyAmount');
+            const netAmount = document.getElementById('netAmount');
+            const balance = document.getElementById('balance');
+
+            function calculateAll() {
+                const loading = parseFloat(loadingQty.value) || 0;
+                const unloading = parseFloat(unloadingQty.value) || 0;
+                shortage.value = (loading - unloading).toFixed(2);
+
+                const cPrice = parseFloat(companyPrice.value) || 0;
+                const pPrice = parseFloat(providerPrice.value) || 0;
+                companyTotal.value = (unloading * cPrice).toFixed(2);
+                providerTotal.value = (unloading * pPrice).toFixed(2);
+
+                const pTotal = parseFloat(providerTotal.value) || 0;
+                taxAmount.value = (pTotal * 0.05).toFixed(2);
+
+                const tax = parseFloat(taxAmount.value) || 0;
+                const stamp = parseFloat(stampFee.value) || 0;
+                const gps = parseFloat(gpsFee.value) || 0;
+                totalDeductions.value = (tax + stamp + gps).toFixed(2);
+
+                const advance = parseFloat(advancePayment.value) || 0;
+                const custody = parseFloat(custodyAmount.value) || 0;
+                const deductions = parseFloat(totalDeductions.value) || 0;
+                const net = pTotal - deductions - advance - custody;
+                netAmount.value = net.toFixed(2);
+                balance.value = net.toFixed(2);
+            }
+
+            // تشغيل الحسابات عند تحميل الصفحة
+            calculateAll();
+
+            // تشغيل الحسابات عند تغيير أي قيمة
+            [loadingQty, unloadingQty, companyPrice, providerPrice, stampFee, gpsFee, advancePayment, custodyAmount].forEach(element => {
+                element.addEventListener('input', calculateAll);
+            });
+        });
+    </script>
+</body>
+</html>

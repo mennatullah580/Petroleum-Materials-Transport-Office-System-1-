@@ -1,0 +1,322 @@
+﻿@page "/OrdersManagement/ViewOrder/{orderId:int}"
+@model Petroleum_Materials_Transport_Office_System.Pages.OrdersManagement.ViewOrderModel
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8" />
+    <title>عرض الطلب - @Model.Order?.InvoiceNumber</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #C8D9E6;
+            --card-bg-light: #F5EFEB;
+            --card-bg-dark: #2F4456;
+            --color-primary: #567C8D;
+            --color-secondary: #2F4456;
+            --color-text-light: white;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: var(--bg-primary);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            background: var(--card-bg-light);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border: 2px solid var(--color-primary);
+        }
+
+        h2 {
+            color: var(--color-secondary);
+            border-bottom: 3px solid var(--color-primary);
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+            font-weight: bold;
+        }
+
+        .info-section {
+            background: var(--bg-primary);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 1px solid var(--color-primary);
+        }
+
+            .info-section h5 {
+                color: var(--color-secondary);
+                font-weight: bold;
+                margin-bottom: 15px;
+                padding-bottom: 10px;
+                border-bottom: 2px solid var(--color-primary);
+            }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(86, 124, 141, 0.2);
+        }
+
+            .info-row:last-child {
+                border-bottom: none;
+            }
+
+        .label {
+            font-weight: bold;
+            color: var(--color-secondary);
+        }
+
+        .value {
+            color: var(--color-primary);
+            font-weight: 600;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .status-completed {
+            background: #38a169;
+            color: white;
+        }
+
+        .status-inprogress {
+            background: #f6ad55;
+            color: #2F4456;
+        }
+
+        .status-cancelled {
+            background: #e53e3e;
+            color: white;
+        }
+
+        .btn-back {
+            background: var(--card-bg-dark);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 10px;
+            font-weight: bold;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+
+            .btn-back:hover {
+                background: var(--color-primary);
+                color: white;
+                transform: translateY(-2px);
+                box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            }
+
+        .actions-section {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid var(--color-primary);
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn-edit {
+            background: #f6ad55;
+            color: var(--color-secondary);
+            border: none;
+            padding: 10px 25px;
+            border-radius: 10px;
+            font-weight: bold;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+
+            .btn-edit:hover {
+                background: #ed8936;
+                color: white;
+            }
+
+        .btn-delete {
+            background: #e53e3e;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+            .btn-delete:hover {
+                background: #c53030;
+            }
+    </style>
+</head>
+<body>
+    <div class="container">
+        @if (Model.Order == null)
+        {
+            <div class="alert alert-danger">
+                <strong>خطأ!</strong> لم يتم العثور على الطلب.
+            </div>
+            <a href="/OrdersManagement" class="btn-back">رجوع للقائمة</a>
+        }
+        else
+        {
+            <h2>تفاصيل الطلب: @Model.Order.InvoiceNumber</h2>
+
+            <div class="info-section">
+                <h5>📋 المعلومات الأساسية</h5>
+                <div class="info-row">
+                    <span class="label">رقم الفاتورة:</span>
+                    <span class="value">@Model.Order.InvoiceNumber</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">تاريخ الطلب:</span>
+                    <span class="value">@Model.Order.OrderDate.ToString("dd/MM/yyyy")</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">تاريخ التسليم:</span>
+                    <span class="value">@Model.Order.DeliveryDate.ToString("dd/MM/yyyy")</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">الحالة:</span>
+                    <span class="value">
+                        @if (Model.Order.Status == "Delivered")
+                        {
+                            <span class="status-badge status-completed">Delivered</span>
+                        }
+                        else if (Model.Order.Status == "In Transit")
+                        {
+                            <span class="status-badge status-inprogress">In Transit</span>
+                        }
+                        else if (Model.Order.Status == "Pending")
+                        {
+                            <span class="status-badge status-inprogress">Pending</span>
+                        }
+                        else
+                        {
+                            <span class="status-badge status-cancelled">Cancelled</span>
+                        }
+                    </span>
+                </div>
+                @if (!string.IsNullOrEmpty(Model.Order.LocationCode))
+                {
+                    <div class="info-row">
+                        <span class="label">كود الجهة:</span>
+                        <span class="value">@Model.Order.LocationCode</span>
+                    </div>
+                }
+            </div>
+
+            <div class="info-section">
+                <h5>📍 المواقع والوقود</h5>
+                <div class="info-row">
+                    <span class="label">جهة التحميل:</span>
+                    <span class="value">@Model.Order.LoadingLocation</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">جهة التفريغ:</span>
+                    <span class="value">@Model.Order.UnloadingLocation</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">نوع الوقود:</span>
+                    <span class="value">@Model.Order.PetroleumType</span>
+                </div>
+            </div>
+
+            <div class="info-section">
+                <h5>📊 الكميات</h5>
+                <div class="info-row">
+                    <span class="label">كمية التحميل:</span>
+                    <span class="value">@Model.Order.LoadingQuantity.ToString("N2") لتر</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">كمية التفريغ:</span>
+                    <span class="value">@Model.Order.UnloadingQuantity.ToString("N2") لتر</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">العجز:</span>
+                    <span class="value" style="color: @(Model.Order.Shortage > 0 ? "#e53e3e" : "#38a169")">
+                        @Model.Order.Shortage.ToString("N2") لتر
+                    </span>
+                </div>
+            </div>
+
+            <div class="info-section">
+                <h5>🚛 المقاول والسيارة</h5>
+                <div class="info-row">
+                    <span class="label">المقاول:</span>
+                    <span class="value">@Model.Order.ProviderName</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">رقم العربة:</span>
+                    <span class="value">@Model.Order.VehiclePlateNumber</span>
+                </div>
+                @if (!string.IsNullOrEmpty(Model.Order.DriverName))
+                {
+                    <div class="info-row">
+                        <span class="label">السائق:</span>
+                        <span class="value">@Model.Order.DriverName</span>
+                    </div>
+                }
+            </div>
+
+            <div class="info-section">
+                <h5>💰 المبالغ المالية</h5>
+                <div class="info-row">
+                    <span class="label">سعر الشركة (للتر):</span>
+                    <span class="value">@Model.Order.CompanyPrice.ToString("N2") ج.م</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">إجمالي الشركة:</span>
+                    <span class="value">@Model.Order.CompanyTotal.ToString("N2") ج.م</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">سعر المقاول (للتر):</span>
+                    <span class="value">@Model.Order.ProviderPrice.ToString("N2") ج.م</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">إجمالي المقاول:</span>
+                    <span class="value">@Model.Order.ProviderTotal.ToString("N2") ج.م</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">الضريبة (5%):</span>
+                    <span class="value">@Model.Order.TaxAmount.ToString("N2") ج.م</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">رسم الدمغة:</span>
+                    <span class="value">@Model.Order.StampFee.ToString("N2") ج.م</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">إجمالي الخصومات:</span>
+                    <span class="value">@Model.Order.TotalDeductions.ToString("N2") ج.م</span>
+                </div>
+                <div class="info-row" style="border-top: 2px solid var(--color-primary); margin-top: 10px; padding-top: 15px;">
+                    <span class="label" style="font-size: 1.1rem;">الصافي:</span>
+                    <span class="value" style="font-size: 1.2rem; font-weight: bold;">@Model.Order.NetAmount.ToString("N2") ج.م</span>
+                </div>
+            </div>
+
+            <div class="actions-section">
+                <a href="/OrdersManagement" class="btn-back">← رجوع للقائمة</a>
+                <a href="/OrdersManagement/EditOrder/@Model.Order.OrderId" class="btn-edit">✏️ تعديل</a>
+                <form method="post" asp-page-handler="Delete" asp-route-orderId="@Model.Order.OrderId" style="display: inline;">
+                    <button type="submit" class="btn-delete" onclick="return confirm('هل أنت متأكد من حذف هذا الطلب؟')">🗑️ حذف</button>
+                </form>
+            </div>
+        }
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

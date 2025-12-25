@@ -2,6 +2,9 @@
 @model Petroleum_Materials_Transport_Office_System.Pages.Master_Lists.ResourcesModel
 @{
     ViewData["Title"] = "Resources";
+
+    // LOGIC: Check which tab should be open. Default is 'vehicles'
+    string activeTab = Model.ActiveTab ?? "vehicles";
 }
 
 <!DOCTYPE html>
@@ -16,6 +19,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
 
     <style>
+        /* YOUR EXACT CSS - NO CHANGES */
         :root {
             --color-navy: #2F4156;
             --color-teal: #567C8D;
@@ -30,7 +34,6 @@
             padding: 20px;
         }
 
-        /* Card Container */
         .master-card {
             background-color: var(--color-teal);
             border-radius: 15px;
@@ -39,7 +42,6 @@
             min-height: 80vh;
         }
 
-        /* Header Styling */
         .page-header {
             color: var(--color-white);
             margin-bottom: 25px;
@@ -47,7 +49,6 @@
             padding-bottom: 15px;
         }
 
-        /* Navigation Tabs */
         .nav-pills .nav-link {
             background-color: rgba(255,255,255,0.2);
             color: var(--color-white);
@@ -68,7 +69,6 @@
                 background-color: rgba(255,255,255,0.4);
             }
 
-        /* Content Area */
         .content-area {
             background-color: var(--color-beige);
             border-radius: 12px;
@@ -77,7 +77,6 @@
             border: 1px solid rgba(0,0,0,0.05);
         }
 
-        /* Filter Section (Search & Filter) */
         .filter-box {
             background-color: var(--color-navy);
             color: var(--color-white);
@@ -91,7 +90,6 @@
             border-radius: 6px;
         }
 
-        /* Tables */
         .custom-table {
             width: 100%;
             border-collapse: separate;
@@ -107,6 +105,7 @@
                 padding: 12px 15px;
                 border-bottom: 1px solid #ddd;
                 text-align: center;
+                vertical-align: middle;
             }
 
                 .custom-table th:first-child {
@@ -122,7 +121,6 @@
                 cursor: pointer;
             }
 
-        /* Buttons (Custom Palette) */
         .btn-action {
             background-color: var(--color-teal);
             color: white;
@@ -138,7 +136,6 @@
                 color: white;
             }
 
-        /* Utility helper for search buttons to ensure they have height */
         .btn-search {
             height: 100%;
             display: flex;
@@ -147,7 +144,6 @@
             font-size: 1rem;
         }
 
-        /* Print Logic: Hides buttons/filters when printing */
         @@media print {
             body {
                 background-color: white;
@@ -194,22 +190,22 @@
 
             <ul class="nav nav-pills mb-3 no-print" id="pills-tab" role="tablist">
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="pills-vehicles-tab" data-bs-toggle="pill" data-bs-target="#pills-vehicles" type="button" role="tab">
+                    <button class="nav-link @(activeTab == "vehicles" ? "active" : "")" id="pills-vehicles-tab" data-bs-toggle="pill" data-bs-target="#pills-vehicles" type="button" role="tab">
                         <i class="fas fa-truck ms-1"></i> المركبات
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="pills-drivers-tab" data-bs-toggle="pill" data-bs-target="#pills-drivers" type="button" role="tab">
+                    <button class="nav-link @(activeTab == "drivers" ? "active" : "")" id="pills-drivers-tab" data-bs-toggle="pill" data-bs-target="#pills-drivers" type="button" role="tab">
                         <i class="fas fa-id-card ms-1"></i> السائقين
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="pills-warehouses-tab" data-bs-toggle="pill" data-bs-target="#pills-warehouses" type="button" role="tab">
+                    <button class="nav-link @(activeTab == "warehouses" ? "active" : "")" id="pills-warehouses-tab" data-bs-toggle="pill" data-bs-target="#pills-warehouses" type="button" role="tab">
                         <i class="fas fa-warehouse ms-1"></i> المخازن
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="pills-mapping-tab" data-bs-toggle="pill" data-bs-target="#pills-mapping" type="button" role="tab">
+                    <button class="nav-link @(activeTab == "mapping" ? "active" : "")" id="pills-mapping-tab" data-bs-toggle="pill" data-bs-target="#pills-mapping" type="button" role="tab">
                         <i class="fas fa-link ms-1"></i> ربط المقاولين
                     </button>
                 </li>
@@ -218,24 +214,26 @@
             <div class="content-area">
                 <div class="tab-content" id="pills-tabContent">
 
-                    <div class="tab-pane fade show active" id="pills-vehicles" role="tabpanel">
-                        <div class="filter-box row g-3 no-print">
+                    <div class="tab-pane fade @(activeTab == "vehicles" ? "show active" : "")" id="pills-vehicles" role="tabpanel">
+
+                        <form method="get" class="filter-box row g-3 no-print">
+                            <input type="hidden" name="ActiveTab" value="vehicles" />
                             <div class="col-md-3">
                                 <label>بحث برقم اللوحة / الكود</label>
-                                <input type="text" class="form-control" placeholder="أدخل البيانات...">
+                                <input type="text" name="VehicleSearch" value="@Model.VehicleSearch" class="form-control" placeholder="أدخل البيانات...">
                             </div>
                             <div class="col-md-3">
                                 <label>الحالة</label>
-                                <select class="form-select">
-                                    <option>الكل</option>
-                                    <option>نشط</option>
-                                    <option>صيانة</option>
+                                <select name="VehicleStatus" class="form-select">
+                                    <option value="الكل" selected="@(Model.VehicleStatus == "الكل")">الكل</option>
+                                    <option value="نشط" selected="@(Model.VehicleStatus == "نشط")">نشط</option>
+                                    <option value="صيانة" selected="@(Model.VehicleStatus == "صيانة")">صيانة</option>
                                 </select>
                             </div>
                             <div class="col-md-2 align-self-end">
-                                <button class="btn btn-action btn-search w-100">بحث</button>
+                                <button type="submit" class="btn btn-action btn-search w-100">بحث</button>
                             </div>
-                        </div>
+                        </form>
 
                         <div class="table-responsive">
                             <table class="table custom-table">
@@ -250,21 +248,43 @@
                                     </tr>
                                 </thead>
                                 <tbody>
+                                    @if (Model.Vehicles != null && Model.Vehicles.Count > 0)
+                                    {
+                                        @foreach (var item in Model.Vehicles)
+                                        {
+                                            <tr>
+                                                <td>@item.VehicleCode</td>
+                                                <td>@item.PlateNumber</td>
+                                                <td>@item.Model</td>
+                                                <td>@item.Capacity</td>
+                                                <td>@item.Status</td>
+                                                <td class="no-print">
+                                                    <button class="btn btn-action btn-sm">تعديل</button>
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <tr><td colspan="6" class="text-center">لا توجد بيانات</td></tr>
+                                    }
                                 </tbody>
                             </table>
                         </div>
                     </div>
 
-                    <div class="tab-pane fade" id="pills-drivers" role="tabpanel">
-                        <div class="filter-box row g-3 no-print">
+                    <div class="tab-pane fade @(activeTab == "drivers" ? "show active" : "")" id="pills-drivers" role="tabpanel">
+
+                        <form method="get" class="filter-box row g-3 no-print">
+                            <input type="hidden" name="ActiveTab" value="drivers" />
                             <div class="col-md-4">
                                 <label>بحث باسم السائق</label>
-                                <input type="text" class="form-control" placeholder="بحث...">
+                                <input type="text" name="DriverSearch" value="@Model.DriverSearch" class="form-control" placeholder="بحث...">
                             </div>
                             <div class="col-md-2 align-self-end">
-                                <button class="btn btn-action btn-search w-100">بحث</button>
+                                <button type="submit" class="btn btn-action btn-search w-100">بحث</button>
                             </div>
-                        </div>
+                        </form>
 
                         <div class="table-responsive">
                             <table class="table custom-table">
@@ -279,21 +299,43 @@
                                     </tr>
                                 </thead>
                                 <tbody>
+                                    @if (Model.Drivers != null && Model.Drivers.Count > 0)
+                                    {
+                                        @foreach (var item in Model.Drivers)
+                                        {
+                                            <tr>
+                                                <td>@item.DriverCode</td>
+                                                <td>@item.Name</td>
+                                                <td>@item.LicenseNumber</td>
+                                                <td>@item.Phone</td>
+                                                <td>@item.Status</td>
+                                                <td class="no-print">
+                                                    <button class="btn btn-action btn-sm">تعديل</button>
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <tr><td colspan="6" class="text-center">لا توجد بيانات</td></tr>
+                                    }
                                 </tbody>
                             </table>
                         </div>
                     </div>
 
-                    <div class="tab-pane fade" id="pills-warehouses" role="tabpanel">
-                        <div class="filter-box row g-3 no-print">
+                    <div class="tab-pane fade @(activeTab == "warehouses" ? "show active" : "")" id="pills-warehouses" role="tabpanel">
+
+                        <form method="get" class="filter-box row g-3 no-print">
+                            <input type="hidden" name="ActiveTab" value="warehouses" />
                             <div class="col-md-4">
                                 <label>بحث عن مخزن</label>
-                                <input type="text" class="form-control" placeholder="اسم المخزن...">
+                                <input type="text" name="WarehouseSearch" value="@Model.WarehouseSearch" class="form-control" placeholder="اسم المخزن...">
                             </div>
                             <div class="col-md-2 align-self-end">
-                                <button class="btn btn-action btn-search w-100">بحث</button>
+                                <button type="submit" class="btn btn-action btn-search w-100">بحث</button>
                             </div>
-                        </div>
+                        </form>
 
                         <div class="table-responsive">
                             <table class="table custom-table">
@@ -307,23 +349,44 @@
                                     </tr>
                                 </thead>
                                 <tbody>
+                                    @if (Model.Warehouses != null && Model.Warehouses.Count > 0)
+                                    {
+                                        @foreach (var item in Model.Warehouses)
+                                        {
+                                            <tr>
+                                                <td>@item.Code</td>
+                                                <td>@item.Name</td>
+                                                <td>@item.Location</td>
+                                                <td>@item.Supervisor</td>
+                                                <td class="no-print">
+                                                    <button class="btn btn-action btn-sm">تعديل</button>
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <tr><td colspan="5" class="text-center">لا توجد بيانات</td></tr>
+                                    }
                                 </tbody>
                             </table>
                         </div>
                     </div>
 
-                    <div class="tab-pane fade" id="pills-mapping" role="tabpanel">
-                        <div class="filter-box row g-3 no-print">
+                    <div class="tab-pane fade @(activeTab == "mapping" ? "show active" : "")" id="pills-mapping" role="tabpanel">
+
+                        <form method="get" class="filter-box row g-3 no-print">
+                            <input type="hidden" name="ActiveTab" value="mapping" />
                             <div class="col-md-3">
                                 <label>المقاول</label>
-                                <select class="form-select">
-                                    <option>اختر المقاول...</option>
+                                <select name="MappingContractor" class="form-select" asp-items="@Model.ContractorsList">
+                                    <option value="">اختر المقاول...</option>
                                 </select>
                             </div>
                             <div class="col-md-3 align-self-end">
-                                <button class="btn btn-action btn-search w-100">عرض المركبات المرتبطة</button>
+                                <button type="submit" class="btn btn-action btn-search w-100">عرض المركبات المرتبطة</button>
                             </div>
-                        </div>
+                        </form>
 
                         <div class="table-responsive">
                             <table class="table custom-table">
@@ -339,6 +402,30 @@
                                     </tr>
                                 </thead>
                                 <tbody>
+                                    @if (Model.Mappings != null && Model.Mappings.Count > 0)
+                                    {
+                                        @foreach (Petroleum_Materials_Transport_Office_System.Pages.Master_Lists.ResourcesModel.MappingDto item in Model.Mappings)
+                                        {
+                                            <tr>
+                                                <td>@item.LinkID</td>
+
+                                                <td>@item.ContractorName</td>
+                                                <td>@item.VehicleNumber</td>
+
+                                                <td>@item.StartDate</td>
+                                                <td>@item.EndDate</td>
+
+                                                <td>@item.Status</td>
+                                                <td class="no-print">
+                                                    <button class="btn btn-action btn-sm">تعديل</button>
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <tr><td colspan="7" class="text-center">لا توجد بيانات</td></tr>
+                                    }
                                 </tbody>
                             </table>
                         </div>

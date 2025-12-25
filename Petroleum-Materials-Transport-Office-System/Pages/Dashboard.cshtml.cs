@@ -7,12 +7,17 @@ namespace Petroleum_Materials_Transport_Office_System.Pages
     {
         public void OnGet()
         {
-            // الصفحة هتفتح عادي
+            // التحقق من وجود Session
+            if (string.IsNullOrEmpty(HttpContext.Session.GetString("Role")))
+            {
+                Response.Redirect("/Login");
+            }
         }
 
         public IActionResult OnPost()
         {
-            // لما المستخدم يدوس "تسجيل الخروج"
+            // مسح الـ Session وتسجيل الخروج
+            HttpContext.Session.Clear();
             return RedirectToPage("/Login");
         }
     }

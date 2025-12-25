@@ -101,6 +101,7 @@
 
             <!-- Tabs -->
             <ul class="nav nav-tabs mb-3" role="tablist">
+
                 <li class="nav-item" role="presentation">
                     <!-- ❌ FIX: Remove space in URL -->
                     <a class="nav-link active" href="/AdminPanel/UserManagement">إدارة المستخدمين</a>
@@ -113,7 +114,19 @@
             <div class="tab-content tab-container">
                 <div class="tab-pane fade show active" id="users" role="tabpanel">
                     <!-- ❌ FIX: Remove space in URL -->
-                    <a href="/AdminPanel/EditUser" class="btn btn-add">إضافة مستخدم جديد</a>
+                    <!-- Search Form -->
+                    <form method="get" class="mb-3">
+                        <div class="input-group">
+                            <input type="text"
+                                   name="search"
+                                   class="form-control"
+                                   placeholder="بحث عن مستخدم (الاسم، اسم المستخدم، البريد، القسم...)"
+                                   value="@Model.SearchTerm" />
+                            <button class="btn btn-outline-secondary" type="submit">بحث</button>
+                        </div>
+                    </form>
+
+                    <a href="/AdminPanel/EditUser" class="btn btn-add mb-3">إضافة مستخدم جديد</a>
 
                     <table class="table table-bordered table-striped">
                         <thead class="table-light">
@@ -141,12 +154,14 @@
                                         <!-- ❌ NO Branch -->
 
                                         <td>
+                                            <!-- Inside the table loop -->
                                             <form method="post" style="display:inline;"
-                                                  onsubmit="return confirm('هل أنت متأكد أنك تريد حذف هذا المستخدم؟');">
+                                                  onsubmit="return confirm('هل أنت متأكد؟');">
                                                 <input type="hidden" name="id" value="@user.Id" />
-                                                <button type="submit" class="btn btn-action"
-                                                        asp-page-handler="Delete"
-                                                        style="background-color:#e74c3c; color:white;">
+                                                <button type="submit"
+                                                        class="btn btn-action"
+                                                        style="background-color:#e74c3c; color:white;"
+                                                        asp-page-handler="Delete">
                                                     حذف
                                                 </button>
                                             </form>

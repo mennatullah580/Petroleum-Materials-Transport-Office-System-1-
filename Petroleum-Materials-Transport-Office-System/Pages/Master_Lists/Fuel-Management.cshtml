@@ -16,7 +16,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
 
     <style>
-        /* --- لوحة الألوان الموحدة --- */
         :root {
             --color-navy: #2F4156;
             --color-teal: #567C8D;
@@ -46,7 +45,6 @@
             padding-bottom: 15px;
         }
 
-        /* تنسيق التبويبات */
         .nav-pills .nav-link {
             background-color: rgba(255,255,255,0.2);
             color: var(--color-white);
@@ -75,7 +73,6 @@
             border: 1px solid rgba(0,0,0,0.05);
         }
 
-        /* الفلاتر */
         .filter-box {
             background-color: var(--color-navy);
             color: var(--color-white);
@@ -89,7 +86,7 @@
             border-radius: 6px;
         }
 
-        /* الجداول */
+
         .custom-table {
             width: 100%;
             border-collapse: separate;
@@ -122,7 +119,7 @@
                 cursor: pointer;
             }
 
-        /* الأزرار */
+
         .btn-action {
             background-color: var(--color-teal);
             color: white;
@@ -146,7 +143,7 @@
             font-size: 1rem;
         }
 
-        /* إعدادات الطباعة */
+
         @@media print {
             body {
                 background-color: white;
@@ -193,12 +190,12 @@
 
             <ul class="nav nav-pills mb-3 no-print" id="pills-tab" role="tablist">
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="pills-orders-tab" data-bs-toggle="pill" data-bs-target="#pills-orders" type="button" role="tab">
+                    <button class="nav-link @(Model.ActiveTab == "orders" ? "active" : "")" id="pills-orders-tab" data-bs-toggle="pill" data-bs-target="#pills-orders" type="button" role="tab">
                         <i class="fas fa-file-invoice-dollar ms-1"></i> أوامر الشغل
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="pills-fuel-tab" data-bs-toggle="pill" data-bs-target="#pills-fuel" type="button" role="tab">
+                    <button class="nav-link @(Model.ActiveTab == "fuel" ? "active" : "")" id="pills-fuel-tab" data-bs-toggle="pill" data-bs-target="#pills-fuel" type="button" role="tab">
                         <i class="fas fa-filter ms-1"></i> أنواع الوقود
                     </button>
                 </li>
@@ -207,38 +204,49 @@
             <div class="content-area">
                 <div class="tab-content" id="pills-tabContent">
 
-                    <div class="tab-pane fade show active" id="pills-orders" role="tabpanel">
-                        <div class="filter-box row g-3 no-print">
+                    <div class="tab-pane fade @(Model.ActiveTab == "orders" ? "show active" : "")" id="pills-orders" role="tabpanel">
+                        <form class="filter-box row g-3 no-print" method="get">
+                            <input type="hidden" name="ActiveTab" value="orders" />
                             <div class="col-md-2">
                                 <label>رقم الفاتورة</label>
-                                <input type="text" class="form-control" placeholder="">
+                                <input type="text" name="InvoiceNum" value="@Model.InvoiceNum" class="form-control" placeholder="">
                             </div>
                             <div class="col-md-2">
                                 <label>من تاريخ</label>
-                                <input type="date" class="form-control">
+                                <input type="date" name="DateFrom" value="@(Model.DateFrom?.ToString("yyyy-MM-dd"))" class="form-control">
                             </div>
                             <div class="col-md-2">
                                 <label>إلى تاريخ</label>
-                                <input type="date" class="form-control">
+                                <input type="date" name="DateTo" value="@(Model.DateTo?.ToString("yyyy-MM-dd"))" class="form-control">
                             </div>
                             <div class="col-md-2">
                                 <label>العميل / المقاول</label>
-                                <select class="form-select">
-                                    <option>الكل</option>
+                                <select class="form-select" name="CustomerFilter">
+                                    @foreach (var cust in Model.Customers)
+                                    {
+                                        if (cust.Value == Model.CustomerFilter)
+                                        {
+                                            <option value="@cust.Value" selected>@cust.Text</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@cust.Value">@cust.Text</option>
+                                        }
+                                    }
                                 </select>
                             </div>
                             <div class="col-md-2">
                                 <label>حالة الطلب</label>
-                                <select class="form-select">
+                                <select class="form-select" name="StatusFilter">
                                     <option>الكل</option>
-                                    <option>مكتمل</option>
-                                    <option>قيد التنفيذ</option>
+                                    <option selected="@(Model.StatusFilter == "مكتمل")">مكتمل</option>
+                                    <option selected="@(Model.StatusFilter == "قيد التنفيذ")">قيد التنفيذ</option>
                                 </select>
                             </div>
                             <div class="col-md-2 align-self-end">
-                                <button class="btn btn-action btn-search w-100">بحث</button>
+                                <button type="submit" class="btn btn-action btn-search w-100">بحث</button>
                             </div>
-                        </div>
+                        </form>
 
                         <div class="table-responsive">
                             <table class="table custom-table">
@@ -258,29 +266,60 @@
                                     </tr>
                                 </thead>
                                 <tbody>
+                                    @if (Model.Orders != null)
+                                    {
+                                        foreach (var item in Model.Orders)
+                                        {
+                                            <tr>
+                                                <td>@item.InvoiceNumber</td>
+                                                <td>@item.Date.ToString("yyyy/MM/dd")</td>
+                                                <td>@item.Customer</td>
+                                                <td>@item.Contractor</td>
+                                                <td>@item.Loading</td>
+                                                <td>@item.Unloading</td>
+                                                <td>@item.Quantity.ToString("N0")</td>
+                                                <td class="text-danger">@item.Shortage.ToString("N0")</td>
+                                                <td class="fw-bold">@item.Net.ToString("N0")</td>
+                                                <td>
+                                                    @if (item.Status == "مكتمل")
+                                                    {
+                                                        <span class="badge bg-success">مكتمل</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-warning text-dark">@item.Status</span>
+                                                    }
+                                                </td>
+                                                <td class="no-print">
+                                                    <button class="btn-action"><i class="fas fa-eye"></i></button>
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
                                 </tbody>
                             </table>
                         </div>
                     </div>
 
-                    <div class="tab-pane fade" id="pills-fuel" role="tabpanel">
-                        <div class="filter-box row g-3 no-print">
+                    <div class="tab-pane fade @(Model.ActiveTab == "fuel" ? "show active" : "")" id="pills-fuel" role="tabpanel">
+                        <form class="filter-box row g-3 no-print" method="get">
+                            <input type="hidden" name="ActiveTab" value="fuel" />
                             <div class="col-md-4">
                                 <label>بحث باسم النوع</label>
-                                <input type="text" class="form-control" placeholder="">
+                                <input type="text" name="FuelNameSearch" value="@Model.FuelNameSearch" class="form-control" placeholder="">
                             </div>
                             <div class="col-md-3">
                                 <label>الحالة</label>
-                                <select class="form-select">
+                                <select class="form-select" name="FuelStatus">
                                     <option>الكل</option>
-                                    <option>نشط</option>
-                                    <option>غير نشط</option>
+                                    <option selected="@(Model.FuelStatus == "نشط")">نشط</option>
+                                    <option selected="@(Model.FuelStatus == "غير نشط")">غير نشط</option>
                                 </select>
                             </div>
                             <div class="col-md-2 align-self-end">
-                                <button class="btn btn-action btn-search w-100">بحث</button>
+                                <button type="submit" class="btn btn-action btn-search w-100">بحث</button>
                             </div>
-                        </div>
+                        </form>
 
                         <div class="table-responsive">
                             <table class="table custom-table">
@@ -297,6 +336,33 @@
                                     </tr>
                                 </thead>
                                 <tbody>
+                                    @if (Model.Fuels != null)
+                                    {
+                                        foreach (var fuel in Model.Fuels)
+                                        {
+                                            <tr>
+                                                <td>@fuel.Name</td>
+                                                <td>@fuel.CompanyPrice.ToString("C")</td>
+                                                <td>@fuel.ContractorPrice.ToString("C")</td>
+                                                <td>@fuel.Tax %</td>
+                                                <td>@fuel.Stamp %</td>
+                                                <td>@fuel.GPS.ToString("N2")</td>
+                                                <td>
+                                                    @if (fuel.IsActive)
+                                                    {
+                                                        <span class="badge bg-success">نشط</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-secondary">غير نشط</span>
+                                                    }
+                                                </td>
+                                                <td class="no-print">
+                                                    <button class="btn-action"><i class="fas fa-edit"></i></button>
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
                                 </tbody>
                             </table>
                         </div>

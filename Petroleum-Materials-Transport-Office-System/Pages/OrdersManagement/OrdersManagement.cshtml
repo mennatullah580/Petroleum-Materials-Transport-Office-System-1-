@@ -242,7 +242,7 @@
 
         <div class="card search-filter-section">
             <div class="card-header">
-                 البحث والفلترة
+                البحث والفلترة
             </div>
             <div class="card-body">
                 <form method="get">
@@ -295,9 +295,10 @@
                             <label class="form-label">الحالة</label>
                             <select class="form-select" asp-for="SearchStatus">
                                 <option value="">الكل</option>
-                                <option value="قيد التنفيذ">قيد التنفيذ</option>
-                                <option value="مكتمل">مكتمل</option>
-                                <option value="ملغي">ملغي</option>
+                                <option value="Pending">(قيد الانتظار)</option>
+                                <option value="In Transit">(قيد النقل)</option>
+                                <option value="Delivered">(تم التوصيل)</option>
+                                <option value="Cancelled">(ملغي)</option>
                             </select>
                         </div>
                         <div class="col-md-3">
@@ -319,7 +320,7 @@
 
         <div class="card">
             <div class="card-header">
-                 قائمة الطلبات (@Model.Orders.Count طلب)
+                قائمة الطلبات (@Model.Orders.Count طلب)
             </div>
             <div class="card-body p-3">
 
@@ -354,22 +355,26 @@
                                 @order.ProviderName
                             </div>
                             <div class="order-detail-col">
-                                @if (order.Status == "مكتمل")
+                                @if (order.Status == "Delivered")
                                 {
-                                    <span class="badge bg-success">@order.Status</span>
+                                    <span class="badge bg-success">Delivered</span>
                                 }
-                                else if (order.Status == "قيد التنفيذ")
+                                else if (order.Status == "In Transit")
                                 {
-                                    <span class="badge bg-warning text-dark">@order.Status</span>
+                                    <span class="badge bg-info">In Transit</span>
+                                }
+                                else if (order.Status == "Pending")
+                                {
+                                    <span class="badge bg-warning text-dark">Pending</span>
                                 }
                                 else
                                 {
-                                    <span class="badge bg-danger">@order.Status</span>
+                                    <span class="badge bg-danger">Cancelled</span>
                                 }
                             </div>
                             <div class="order-actions">
-                                <button class="btn btn-sm btn-info" title="عرض">👁️</button>
-                                <button class="btn btn-sm btn-warning" title="تعديل">✏️</button>
+                                <a href="/OrdersManagement/ViewOrder/@order.OrderId" class="btn btn-sm btn-info" title="عرض">👁️</a>
+                                <a href="/OrdersManagement/EditOrder/@order.OrderId" class="btn btn-sm btn-warning" title="تعديل">✏️</a>
                                 <form method="post" asp-page-handler="DeleteOrder" asp-route-orderId="@order.OrderId" style="display: inline;">
                                     <button type="submit" class="btn btn-sm btn-danger" title="حذف" onclick="return confirm('هل أنت متأكد من حذف هذا الطلب؟')">🗑️</button>
                                 </form>
@@ -574,9 +579,11 @@
                                     <div class="col-md-6">
                                         <label class="form-label">الحالة *</label>
                                         <select class="form-select" asp-for="NewOrder.Status" required>
-                                            <option value="قيد التنفيذ">قيد التنفيذ</option>
-                                            <option value="مكتمل">مكتمل</option>
-                                            <option value="ملغي">ملغي</option>
+                                            <option value="">-- اختر الحالة --</option>
+                                            <option value="Pending">(قيد الانتظار)</option>
+                                            <option value="In Transit">(قيد النقل)</option>
+                                            <option value="Delivered">(تم التوصيل)</option>
+                                            <option value="Cancelled">(ملغي)</option>
                                         </select>
                                     </div>
                                 </div>
