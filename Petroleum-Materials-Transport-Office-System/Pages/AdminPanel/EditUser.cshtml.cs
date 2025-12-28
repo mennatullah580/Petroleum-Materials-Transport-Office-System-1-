@@ -34,7 +34,6 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.AdminPanel
                     User = existingUser;
                 }
             }
-
             LoadDepartments();
             LoadRoles();
         }
@@ -62,7 +61,7 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.AdminPanel
                     );
                 }
 
-                // Password is required for new users
+                // Password is REQUIRED for new users
                 if (string.IsNullOrWhiteSpace(User.Password))
                 {
                     ModelState.AddModelError("User.Password", "كلمة المرور مطلوبة للمستخدم الجديد");
@@ -70,15 +69,18 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.AdminPanel
                 }
             }
 
-            // ✅ Validate username uniqueness (ignore current user during edit)
-            if (_repo.IsUsernameTaken(User.Username, User.Id))
+            // Convert ID=0 to null for exclusion
+            int? excludeId = User.Id == 0 ? null : (int?)User.Id;
+
+            // Validate username
+            if (_repo.IsUsernameTaken(User.Username, excludeId))
             {
                 ModelState.AddModelError("User.Username", "اسم المستخدم مستخدم بالفعل");
                 return Page();
             }
 
-            // ✅ Validate email uniqueness (ignore current user during edit)
-            if (!string.IsNullOrEmpty(User.Email) && _repo.IsEmailTaken(User.Email, User.Id))
+            // Validate email
+            if (!string.IsNullOrEmpty(User.Email) && _repo.IsEmailTaken(User.Email, excludeId))
             {
                 ModelState.AddModelError("User.Email", "البريد الإلكتروني مستخدم بالفعل");
                 return Page();

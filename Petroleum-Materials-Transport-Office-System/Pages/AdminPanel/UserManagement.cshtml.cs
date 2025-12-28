@@ -27,24 +27,56 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.AdminPanel
 
         public IActionResult OnPostDelete(int id)
         {
-            string username = "Unknown";
+            var currentUserIdStr = HttpContext.Session.GetString("UserID");
+            if (string.IsNullOrEmpty(currentUserIdStr) || !int.TryParse(currentUserIdStr, out int currentUserId))
+            {
+                return RedirectToPage();
+            }
+
+            // 🔒 Cannot delete yourself
+            if (id == currentUserId)
+            {
+                TempData["ErrorMessage"] = "لا يمكنك حذف حسابك الخاص";
+                return RedirectToPage(new { search = SearchTerm });
+            }
+
+            string? targetUserRole = _repo.GetUserRoleById(id);
+            if (string.IsNullOrEmpty(targetUserRole))
+            {
+                TempData["ErrorMessage"] = "المستخدم غير موجود";
+                return RedirectToPage(new { search = SearchTerm });
+            }
+
+            string? currentUserRole = _repo.GetUserRoleById(currentUserId);
+            if (string.IsNullOrEmpty(currentUserRole))
+            {
+                return RedirectToPage();
+            }
+
+            // 🔒 Only Super Admin (ID=1) can delete other admins
+            if (targetUserRole == "Admin" && currentUserId != 1)
+            {
+                TempData["ErrorMessage"] = "لا يمكنك حذف حسابات المدراء الآخرين";
+                return RedirectToPage(new { search = SearchTerm });
+            }
+
+            // ✅ Proceed with delete
             try
             {
+                string username = "Unknown";
                 var user = _repo.GetUserById(id);
-                username = user?.Username ?? "Unknown";
+                if (user != null) username = user.Username;
+
+                _repo.DeleteUser(id);
+
+                var currentUsername = HttpContext.Session.GetString("Username") ?? "system";
+                _actionLogger.Log(currentUsername, "حذف مستخدم", $"تم حذف المستخدم {username} (ID: {id})");
             }
-            catch { }
+            catch
+            {
+                TempData["ErrorMessage"] = "حدث خطأ أثناء حذف المستخدم";
+            }
 
-            _repo.DeleteUser(id);
-
-            var currentUser = HttpContext.Session.GetString("Username") ?? "system";
-            _actionLogger.Log(
-                currentUser,
-                "حذف مستخدم",
-                $"تم حذف المستخدم {username} (ID: {id})"
-            );
-
-            // Preserve search term after delete
             return RedirectToPage(new { search = SearchTerm });
         }
     }
