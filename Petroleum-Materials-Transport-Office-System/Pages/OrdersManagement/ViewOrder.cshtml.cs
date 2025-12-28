@@ -8,7 +8,7 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.OrdersManagement
     public class ViewOrderModel : PageModel
     {
         private readonly string _connectionString =
-            @"Server=DESKTOP-1QHK872;Database=PetroleumTransportDB;Trusted_Connection=True;TrustServerCertificate=True;";
+            @"Server=.;Database=PetroleumTransportDB;Trusted_Connection=True;TrustServerCertificate=True;";
 
         public Order? Order { get; set; }
 

@@ -32,7 +32,7 @@ namespace Petroleum_Materials_Transport_Office_System.Pages
                 return Page();
             }
 
-            string connectionString = @"Server=DESKTOP-1QHK872;Database=PetroleumTransportDB;Trusted_Connection=True;TrustServerCertificate=True;;";
+            string connectionString = @"Server=.;Database=PetroleumTransportDB;Trusted_Connection=True;TrustServerCertificate=True;;";
 
             using (SqlConnection conn = new SqlConnection(connectionString))
             {

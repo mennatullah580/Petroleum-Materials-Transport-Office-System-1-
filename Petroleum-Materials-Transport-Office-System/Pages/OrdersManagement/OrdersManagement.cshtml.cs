@@ -8,7 +8,7 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.OrdersManagement
 {
     public class IndexModel : PageModel
     {
-        private readonly string _connectionString = "Server=DESKTOP-1QHK872;Database=PetroleumTransportDB;Trusted_Connection=True;TrustServerCertificate=True;";
+        private readonly string _connectionString = "Server=.;Database=PetroleumTransportDB;Trusted_Connection=True;TrustServerCertificate=True;";
 
         public List<Order> Orders { get; set; } = new List<Order>();
 
