@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Petroleum_Materials_Transport_Office_System.Models;
 using Petroleum_Materials_Transport_Office_System.Services;
+using Petroleum_Materials_Transport_Office_System.Utils;
 
 namespace Petroleum_Materials_Transport_Office_System.Pages.AdminPanel
 {
@@ -23,7 +24,6 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.AdminPanel
         public List<SelectListItem> Departments { get; set; } = new();
         public List<SelectListItem> Roles { get; set; } = new();
 
-        // ✅ Accept 'id' parameter
         public void OnGet(int? id)
         {
             if (id.HasValue)
@@ -44,21 +44,53 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.AdminPanel
             LoadDepartments();
             LoadRoles();
 
-            if (!ModelState.IsValid)
+            if (string.IsNullOrWhiteSpace(User.FullName))
             {
+                ModelState.AddModelError("User.FullName", "الاسم الكامل مطلوب");
                 return Page();
             }
 
-            if (_repo.UserExists(User.Username, User.Email, User.Id))
+            // Handle new user logic
+            if (User.Id == 0)
             {
-                ModelState.AddModelError("", "اسم المستخدم أو البريد الإلكتروني مستخدم بالفعل");
+                // Auto-generate username if empty
+                if (string.IsNullOrWhiteSpace(User.Username))
+                {
+                    User.Username = UsernameGenerator.GenerateUniqueUsername(
+                        User.FullName,
+                        username => _repo.IsUsernameTaken(username)
+                    );
+                }
+
+                // Password is required for new users
+                if (string.IsNullOrWhiteSpace(User.Password))
+                {
+                    ModelState.AddModelError("User.Password", "كلمة المرور مطلوبة للمستخدم الجديد");
+                    return Page();
+                }
+            }
+
+            // ✅ Validate username uniqueness (ignore current user during edit)
+            if (_repo.IsUsernameTaken(User.Username, User.Id))
+            {
+                ModelState.AddModelError("User.Username", "اسم المستخدم مستخدم بالفعل");
                 return Page();
             }
 
+            // ✅ Validate email uniqueness (ignore current user during edit)
+            if (!string.IsNullOrEmpty(User.Email) && _repo.IsEmailTaken(User.Email, User.Id))
+            {
+                ModelState.AddModelError("User.Email", "البريد الإلكتروني مستخدم بالفعل");
+                return Page();
+            }
+
+            // Save the user
             _repo.SaveUser(User);
 
+            // Log the action
             var currentUser = HttpContext.Session.GetString("Username") ?? "system";
-            _actionLogger.Log(currentUser, "تعديل مستخدم", $"تم تعديل المستخدم {User.Username}");
+            string action = User.Id == 0 ? "إضافة مستخدم" : "تعديل مستخدم";
+            _actionLogger.Log(currentUser, action, $"تم {action} '{User.Username}'");
 
             return RedirectToPage("/AdminPanel/UserManagement");
         }
