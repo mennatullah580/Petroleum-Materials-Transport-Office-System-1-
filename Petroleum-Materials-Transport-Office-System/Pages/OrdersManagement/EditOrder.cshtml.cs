@@ -7,8 +7,7 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.OrdersManagement
 {
     public class EditOrderModel : PageModel
     {
-        private readonly string _connectionString = @"Server=DESKTOP-1QHK872;Database=PetroleumTransportDB;Trusted_Connection=True;TrustServerCertificate=True;";
-
+        private readonly string _connectionString = @"Data Source=EPRAHEEM-SABRY\SQLEXPRESS;Initial Catalog=PetroleumTransportDB;Integrated Security=True;Encrypt=True;Trust Server Certificate=True";
 
         [BindProperty]
         public Order Order { get; set; }
@@ -18,6 +17,48 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.OrdersManagement
         public List<string> PetroleumTypes { get; set; } = new List<string>();
         public List<string> Providers { get; set; } = new List<string>();
         public List<string> Vehicles { get; set; } = new List<string>();
+
+        // 🔥 إضافة قائمة أكواد الجهات
+        public List<string> LocationCodes { get; set; } = new List<string>
+        {
+            "LOC001", "LOC002", "LOC003", "LOC004",
+            "LOC005", "LOC006", "LOC007", "LOC008"
+        };
+
+        public string OldLocationCode { get; set; }
+
+        private readonly Dictionary<string, (int Min, int Max)> _invoiceRanges = new()
+        {
+            { "LOC001", (1, 999) },
+            { "LOC002", (2000, 2999) },
+            { "LOC003", (471000, 471999) },
+            { "LOC004", (594000, 597999) },
+            { "LOC005", (56000, 56999) },
+            { "LOC006", (458000, 460999) },
+            { "LOC007", (25000, 25999) },
+            { "LOC008", (146000, 146999) }
+        };
+
+        private string GenerateInvoiceNumber(string locationCode, SqlConnection conn, SqlTransaction t)
+        {
+            if (!_invoiceRanges.ContainsKey(locationCode))
+            {
+                throw new Exception($"كود الجهة {locationCode} غير موجود في النطاقات المحددة");
+            }
+
+            var range = _invoiceRanges[locationCode];
+            var rnd = new Random();
+
+            while (true)
+            {
+                string num = rnd.Next(range.Min, range.Max + 1).ToString();
+                using SqlCommand cmd = new("SELECT COUNT(*) FROM Invoice WHERE Invoice_Number=@N", conn, t);
+                cmd.Parameters.AddWithValue("@N", num);
+
+                if (Convert.ToInt32(cmd.ExecuteScalar()) == 0)
+                    return num;
+            }
+        }
 
         public IActionResult OnGet(int orderId)
         {
@@ -32,7 +73,7 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.OrdersManagement
             if (Order == null)
             {
                 TempData["Error"] = "لم يتم العثور على الطلب";
-                return Redirect("/OrdersManagement");  // ✅ مُصلح هنا
+                return RedirectToPage("/OrdersManagement/Index");
             }
 
             return Page();
@@ -44,7 +85,6 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.OrdersManagement
             {
                 conn.Open();
 
-                // جلب مواقع التحميل والتفريغ
                 string locationQuery = "SELECT DISTINCT Location_Name FROM [dbo].[Location] WHERE Status = 'Active'";
                 using (SqlCommand cmd = new SqlCommand(locationQuery, conn))
                 using (SqlDataReader reader = cmd.ExecuteReader())
@@ -57,7 +97,6 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.OrdersManagement
                     }
                 }
 
-                // جلب أنواع الوقود
                 string fuelQuery = "SELECT Type_name FROM [dbo].[Fuel_Type] WHERE Status = 'Active'";
                 using (SqlCommand cmd = new SqlCommand(fuelQuery, conn))
                 using (SqlDataReader reader = cmd.ExecuteReader())
@@ -68,7 +107,6 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.OrdersManagement
                     }
                 }
 
-                // جلب المقاولين
                 string providerQuery = "SELECT Provider_Name FROM [dbo].[Provider] WHERE Status = 'Active'";
                 using (SqlCommand cmd = new SqlCommand(providerQuery, conn))
                 using (SqlDataReader reader = cmd.ExecuteReader())
@@ -79,7 +117,6 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.OrdersManagement
                     }
                 }
 
-                // جلب السيارات
                 string vehicleQuery = "SELECT Plate_number FROM [dbo].[Vehicle] WHERE Status = 'Active'";
                 using (SqlCommand cmd = new SqlCommand(vehicleQuery, conn))
                 using (SqlDataReader reader = cmd.ExecuteReader())
@@ -101,26 +138,24 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.OrdersManagement
                 string query = @"
                     SELECT 
                         o.Order_ID,
-                        o.Company_ID,
-                        o.Provider_ID,
-                        o.Driver_ID,
-                        o.Vehicle_ID,
-                        o.Petroleum_Type,
                         o.Order_Date,
-                        o.Loading_Location,
-                        o.Unloading_Location,
+                        o.Delivery_Date,
+                        o.Status,
                         o.Loading_Quantity,
                         o.Unloading_Quantity,
                         o.Shortage,
-                        o.Status,
-                        o.Delivery_Date,
+                        o.Loading_Location,
+                        o.Unloading_Location,
+                        
                         p.Provider_Name,
                         v.Plate_number,
                         d.Name as Driver_Name,
                         ft.Type_Name,
                         ll.Location_Name as Loading_Location_Name,
+                        ll.Location_Code as Loading_Location_Code,
                         ul.Location_Name as Unloading_Location_Name,
                         i.Invoice_Number,
+                        
                         f.Company_Price,
                         f.Provider_Price,
                         f.Company_Total,
@@ -152,6 +187,9 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.OrdersManagement
                     {
                         if (reader.Read())
                         {
+                            // 🔥 حفظ كود الجهة القديم
+                            OldLocationCode = reader["Loading_Location_Code"]?.ToString() ?? "";
+
                             Order = new Order
                             {
                                 OrderId = orderId,
@@ -159,9 +197,14 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.OrdersManagement
                                 OrderDate = reader["Order_Date"] != DBNull.Value ? Convert.ToDateTime(reader["Order_Date"]) : DateTime.Now,
                                 DeliveryDate = reader["Delivery_Date"] != DBNull.Value ? Convert.ToDateTime(reader["Delivery_Date"]) : DateTime.Now,
                                 Status = reader["Status"]?.ToString() ?? "Pending",
+
                                 LoadingLocation = reader["Loading_Location_Name"]?.ToString() ?? "",
                                 UnloadingLocation = reader["Unloading_Location_Name"]?.ToString() ?? "",
                                 PetroleumType = reader["Type_Name"]?.ToString() ?? "",
+
+                                // 🔥 حفظ كود الجهة في Order
+                                LocationCode = reader["Loading_Location_Code"]?.ToString() ?? "",
+
                                 LoadingQuantity = reader["Loading_Quantity"] != DBNull.Value ? Convert.ToDecimal(reader["Loading_Quantity"]) : 0,
                                 UnloadingQuantity = reader["Unloading_Quantity"] != DBNull.Value ? Convert.ToDecimal(reader["Unloading_Quantity"]) : 0,
                                 Shortage = reader["Shortage"] != DBNull.Value ? Convert.ToDecimal(reader["Shortage"]) : 0,
@@ -169,7 +212,6 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.OrdersManagement
                                 VehiclePlateNumber = reader["Plate_number"]?.ToString() ?? "",
                                 DriverName = reader["Driver_Name"]?.ToString() ?? "",
 
-                                // البيانات المالية
                                 CompanyPrice = reader["Company_Price"] != DBNull.Value ? Convert.ToDecimal(reader["Company_Price"]) : 0,
                                 ProviderPrice = reader["Provider_Price"] != DBNull.Value ? Convert.ToDecimal(reader["Provider_Price"]) : 0,
                                 CompanyTotal = reader["Company_Total"] != DBNull.Value ? Convert.ToDecimal(reader["Company_Total"]) : 0,
@@ -206,17 +248,28 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.OrdersManagement
                     {
                         try
                         {
-                            // الحصول على IDs من الأسماء
+                            // 🔥 جلب كود الجهة القديم من الداتابيز
+                            string getOldCodeQuery = "SELECT Loading_Location FROM Orders WHERE Order_ID = @OrderID";
+                            using (SqlCommand cmd = new SqlCommand(getOldCodeQuery, conn, transaction))
+                            {
+                                cmd.Parameters.AddWithValue("@OrderID", Order.OrderId);
+                                var result = cmd.ExecuteScalar();
+                                OldLocationCode = result?.ToString() ?? "";
+                            }
+
+                            // 🔥 إذا تغير كود الجهة، نولد رقم فاتورة جديد
+                            if (!string.IsNullOrEmpty(Order.LocationCode) && Order.LocationCode != OldLocationCode)
+                            {
+                                Order.InvoiceNumber = GenerateInvoiceNumber(Order.LocationCode, conn, transaction);
+                            }
+
                             int providerId = GetProviderIdByName(Order.ProviderName, conn, transaction);
                             int vehicleId = GetVehicleIdByPlate(Order.VehiclePlateNumber, conn, transaction);
                             int fuelTypeId = GetFuelTypeIdByName(Order.PetroleumType, conn, transaction);
                             string loadingLocationCode = GetLocationCodeByName(Order.LoadingLocation, conn, transaction);
                             string unloadingLocationCode = GetLocationCodeByName(Order.UnloadingLocation, conn, transaction);
 
-                            // حساب العجز
                             Order.Shortage = Order.LoadingQuantity - Order.UnloadingQuantity;
-
-                            // حساب المبالغ
                             Order.CompanyTotal = Order.UnloadingQuantity * Order.CompanyPrice;
                             Order.ProviderTotal = Order.UnloadingQuantity * Order.ProviderPrice;
                             Order.TaxAmount = Order.ProviderTotal * 0.05m;
@@ -224,15 +277,12 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.OrdersManagement
                             Order.NetAmount = Order.ProviderTotal - Order.TotalDeductions - Order.AdvancePayment - Order.CustodyAmount;
                             Order.Balance = Order.NetAmount;
 
-                            // التحقق من الحالة
                             string validStatus = string.IsNullOrEmpty(Order.Status) ? "Pending" : Order.Status;
-                            if (validStatus != "Pending" && validStatus != "In Transit" &&
-                                validStatus != "Delivered" && validStatus != "Cancelled")
+                            if (validStatus == "Pending")
                             {
-                                validStatus = "Pending";
+                                Order.OrderDate = DateTime.Now;
                             }
 
-                            // تحديث جدول Orders
                             string updateOrderQuery = @"
                                 UPDATE [dbo].[Orders]
                                 SET 
@@ -262,12 +312,10 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.OrdersManagement
                                 cmd.Parameters.AddWithValue("@UnloadingQuantity", Order.UnloadingQuantity);
                                 cmd.Parameters.AddWithValue("@Shortage", Order.Shortage);
                                 cmd.Parameters.AddWithValue("@Status", validStatus);
-                                cmd.Parameters.AddWithValue("@DeliveryDate", Order.DeliveryDate);
-
+                                cmd.Parameters.AddWithValue("@DeliveryDate", validStatus == "Pending" ? (object)DBNull.Value : Order.DeliveryDate);
                                 cmd.ExecuteNonQuery();
                             }
 
-                            // تحديث جدول Financials
                             string updateFinancialsQuery = @"
                                 UPDATE [dbo].[Financials]
                                 SET 
@@ -300,14 +348,11 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.OrdersManagement
                                 cmd.Parameters.AddWithValue("@CustodyAmount", Order.CustodyAmount);
                                 cmd.Parameters.AddWithValue("@NetAmount", Order.NetAmount);
                                 cmd.Parameters.AddWithValue("@Balance", Order.Balance);
-
                                 cmd.ExecuteNonQuery();
                             }
 
-                            // تحديث Invoice
                             if (!string.IsNullOrEmpty(Order.InvoiceNumber))
                             {
-                                // التحقق من وجود فاتورة
                                 string checkInvoiceQuery = "SELECT COUNT(*) FROM [dbo].[Invoice] WHERE Order_ID = @OrderID";
                                 int invoiceExists = 0;
                                 using (SqlCommand cmd = new SqlCommand(checkInvoiceQuery, conn, transaction))
@@ -318,7 +363,6 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.OrdersManagement
 
                                 if (invoiceExists > 0)
                                 {
-                                    // تحديث الفاتورة الموجودة
                                     string updateInvoiceQuery = @"
                                         UPDATE [dbo].[Invoice]
                                         SET 
@@ -341,45 +385,13 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.OrdersManagement
                                         cmd.Parameters.AddWithValue("@Deductions", Order.TotalDeductions);
                                         cmd.Parameters.AddWithValue("@AdvancePayment", Order.AdvancePayment);
                                         cmd.Parameters.AddWithValue("@CustodyAmount", Order.CustodyAmount);
-
-                                        cmd.ExecuteNonQuery();
-                                    }
-                                }
-                                else
-                                {
-                                    // إنشاء فاتورة جديدة
-                                    string insertInvoiceQuery = @"
-                                        INSERT INTO [dbo].[Invoice] (
-                                            Invoice_Number, Order_ID, Company_ID, Provider_ID, Company_Amount, Provider_Amount,
-                                            Issue_Date, Payment_Status, Net_Amount, Deductions, Advance_Payment, Custody_Amount
-                                        )
-                                        VALUES (
-                                            @InvoiceNumber, @OrderID, @CompanyID, @ProviderID, @CompanyAmount, @ProviderAmount,
-                                            @IssueDate, @PaymentStatus, @NetAmount, @Deductions, @AdvancePayment, @CustodyAmount
-                                        )";
-
-                                    using (SqlCommand cmd = new SqlCommand(insertInvoiceQuery, conn, transaction))
-                                    {
-                                        cmd.Parameters.AddWithValue("@InvoiceNumber", Order.InvoiceNumber);
-                                        cmd.Parameters.AddWithValue("@OrderID", Order.OrderId);
-                                        cmd.Parameters.AddWithValue("@CompanyID", 1);
-                                        cmd.Parameters.AddWithValue("@ProviderID", providerId);
-                                        cmd.Parameters.AddWithValue("@CompanyAmount", Order.CompanyTotal);
-                                        cmd.Parameters.AddWithValue("@ProviderAmount", Order.ProviderTotal);
-                                        cmd.Parameters.AddWithValue("@IssueDate", DateTime.Now);
-                                        cmd.Parameters.AddWithValue("@PaymentStatus", "Unpaid");
-                                        cmd.Parameters.AddWithValue("@NetAmount", Order.NetAmount);
-                                        cmd.Parameters.AddWithValue("@Deductions", Order.TotalDeductions);
-                                        cmd.Parameters.AddWithValue("@AdvancePayment", Order.AdvancePayment);
-                                        cmd.Parameters.AddWithValue("@CustodyAmount", Order.CustodyAmount);
-
                                         cmd.ExecuteNonQuery();
                                     }
                                 }
                             }
 
                             transaction.Commit();
-                            TempData["Success"] = "تم تحديث الطلب بنجاح";
+                            TempData["Success"] = "✅ تم تحديث الطلب بنجاح";
                         }
                         catch (Exception ex)
                         {
@@ -391,14 +403,59 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.OrdersManagement
             }
             catch (Exception ex)
             {
-                TempData["Error"] = $"حدث خطأ: {ex.Message}";
+                TempData["Error"] = $"❌ حدث خطأ: {ex.Message}";
                 return Page();
             }
 
-            return Redirect("/OrdersManagement");  // ✅ مُصلح هنا
+            return RedirectToPage("/OrdersManagement/Index");
         }
 
-        // دوال مساعدة
+        public IActionResult OnPostDelete(int orderId)
+        {
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(_connectionString))
+                {
+                    conn.Open();
+                    using (SqlTransaction transaction = conn.BeginTransaction())
+                    {
+                        try
+                        {
+                            new SqlCommand("DELETE FROM Invoice WHERE Order_ID = @ID", conn, transaction)
+                            {
+                                Parameters = { new SqlParameter("@ID", orderId) }
+                            }.ExecuteNonQuery();
+
+                            new SqlCommand("DELETE FROM Financials WHERE Order_ID = @ID", conn, transaction)
+                            {
+                                Parameters = { new SqlParameter("@ID", orderId) }
+                            }.ExecuteNonQuery();
+
+                            new SqlCommand("DELETE FROM Orders WHERE Order_ID = @ID", conn, transaction)
+                            {
+                                Parameters = { new SqlParameter("@ID", orderId) }
+                            }.ExecuteNonQuery();
+
+                            transaction.Commit();
+                            TempData["Success"] = "✅ تم حذف الطلب بنجاح";
+                        }
+                        catch
+                        {
+                            transaction.Rollback();
+                            throw;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "❌ خطأ أثناء الحذف: " + ex.Message;
+                return Page();
+            }
+
+            return RedirectToPage("/OrdersManagement/Index");
+        }
+
         private int GetProviderIdByName(string providerName, SqlConnection conn, SqlTransaction transaction)
         {
             string query = "SELECT Provider_ID FROM [dbo].[Provider] WHERE Provider_Name = @Name";

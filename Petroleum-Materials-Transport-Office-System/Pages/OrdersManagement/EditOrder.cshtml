@@ -64,6 +64,11 @@
             background: white;
         }
 
+        .form-select {
+            background-position: left 0.75rem center;
+            padding-left: 2.5rem;
+        }
+
             .form-control:focus, .form-select:focus {
                 border-color: var(--color-primary);
                 box-shadow: 0 0 0 0.2rem rgba(86, 124, 141, 0.25);
@@ -148,7 +153,7 @@
             <div class="alert alert-danger">
                 <strong>خطأ!</strong> لم يتم العثور على الطلب.
             </div>
-            <a href="/OrdersManagement" class="btn-cancel">رجوع للقائمة</a>
+            <a href="/OrdersManagement/Index" class="btn-cancel">رجوع للقائمة</a>
         }
         else
         {
@@ -169,8 +174,14 @@
                             <input type="date" class="form-control" asp-for="Order.OrderDate" required>
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">كود الجهة</label>
-                            <input type="text" class="form-control" asp-for="Order.LocationCode">
+                            <label class="form-label">كود الجهة *</label>
+                            <select class="form-select" asp-for="Order.LocationCode" required>
+                                <option value="">اختر كود الجهة</option>
+                                @foreach (var code in Model.LocationCodes)
+                                {
+                                    <option value="@code">@code</option>
+                                }
+                            </select>
                         </div>
                     </div>
                 </div>
@@ -330,11 +341,12 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label">تاريخ التسليم *</label>
-                            <input type="date" class="form-control" asp-for="Order.DeliveryDate" required>
+                            <input type="date" class="form-control" asp-for="Order.DeliveryDate" id="deliveryDate" required>
+                            <input type="text" class="form-control" id="deliveryDateMessage" value="لم يتم تحديد التاريخ بعد (قيد الانتظار)" readonly style="display:none; background-color: #f8f9fa; color: #6c757d;">
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">الحالة *</label>
-                            <select class="form-select" asp-for="Order.Status" required>
+                            <select class="form-select" asp-for="Order.Status" id="orderStatus" required>
                                 <option value="">-- اختر الحالة --</option>
                                 <option value="Pending">Pending (قيد الانتظار)</option>
                                 <option value="In Transit">In Transit (قيد النقل)</option>
@@ -347,7 +359,7 @@
 
                 <div class="actions-section">
                     <button type="submit" class="btn-save">💾 حفظ التعديلات</button>
-                    <a href="/OrdersManagement" class="btn-cancel">❌ إلغاء</a>
+                    <a href="/OrdersManagement/Index" class="btn-cancel">❌ إلغاء</a>
                 </div>
             </form>
         }
@@ -405,6 +417,36 @@
             [loadingQty, unloadingQty, companyPrice, providerPrice, stampFee, gpsFee, advancePayment, custodyAmount].forEach(element => {
                 element.addEventListener('input', calculateAll);
             });
+
+            // Status & Date Logic
+            const orderStatus = document.getElementById('orderStatus');
+            const deliveryDate = document.getElementById('deliveryDate');
+            const deliveryDateMessage = document.getElementById('deliveryDateMessage');
+
+            function handleStatusChange() {
+                if (orderStatus && orderStatus.value === 'Pending') {
+                    // Hide Date Input, Show Message
+                    deliveryDate.style.display = 'none';
+                    deliveryDate.disabled = true;
+
+                    if (deliveryDateMessage) {
+                        deliveryDateMessage.style.display = 'block';
+                    }
+                } else {
+                    // Show Date Input, Hide Message
+                    deliveryDate.style.display = 'block';
+                    deliveryDate.disabled = false;
+
+                    if (deliveryDateMessage) {
+                        deliveryDateMessage.style.display = 'none';
+                    }
+                }
+            }
+
+            if (orderStatus) {
+                orderStatus.addEventListener('change', handleStatusChange);
+                handleStatusChange(); // Initial check
+            }
         });
     </script>
 </body>

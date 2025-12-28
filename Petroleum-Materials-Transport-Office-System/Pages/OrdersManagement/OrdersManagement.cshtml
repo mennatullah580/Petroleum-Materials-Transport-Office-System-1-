@@ -102,11 +102,20 @@
                 background: var(--color-secondary);
             }
 
-        .form-control, .form-select {
+        .form-control {
             border-radius: 10px;
             border: 1px solid var(--color-primary);
             padding: 8px 15px;
             background: var(--bg-primary); /* خلفية حقول الإدخال فاتحة */
+        }
+        
+        .form-select {
+            border-radius: 10px;
+            border: 2px solid #567C8D; /* حدود أسمك قليلاً */
+            padding: 8px 15px;
+            background-color: #e3f2fd; /* لون خلفية مميز للقوائم */
+            background-position: left 0.75rem center; /* ضمان ظهور السهم على اليسار */
+            padding-left: 2.5rem; /* مساحة للسهم حتى لا يتداخل مع النص */
         }
 
             .form-control:focus, .form-select:focus {
@@ -249,7 +258,13 @@
                     <div class="row g-3">
                         <div class="col-md-3">
                             <label class="form-label">رقم الفاتورة</label>
-                            <input type="text" class="form-control" asp-for="SearchInvoiceNumber" placeholder="ابحث برقم الفاتورة">
+                            <select class="form-select" asp-for="SearchInvoiceNumber">
+                                <option value="">الكل</option>
+                                @foreach (var inv in Model.InvoiceNumbers)
+                                {
+                                    <option value="@inv">@inv</option>
+                                }
+                            </select>
                         </div>
                         <div class="col-md-3">
                             <label class="form-label">جهة التحميل</label>
@@ -405,8 +420,8 @@
                                 <h5>المعلومات الأساسية</h5>
                                 <div class="row g-3">
                                     <div class="col-md-4">
-                                        <label class="form-label">رقم الفاتورة *</label>
-                                        <input type="text" class="form-control" asp-for="NewOrder.InvoiceNumber" required>
+                                        <label class="form-label">رقم الفاتورة</label>
+                                        <input type="text" class="form-control" value="سيتم إنشاؤه تلقائياً" readonly disabled style="background-color: #e9ecef;">
                                     </div>
                                     <div class="col-md-4">
                                         <label class="form-label">تاريخ الفاتورة *</label>
@@ -414,7 +429,13 @@
                                     </div>
                                     <div class="col-md-4">
                                         <label class="form-label">كود الجهة</label>
-                                        <input type="text" class="form-control" asp-for="NewOrder.LocationCode">
+                                        <select class="form-select" asp-for="NewOrder.LocationCode">
+                                            <option value="">اختر الكود...</option>
+                                            @foreach (var code in Model.LocationCodes)
+                                            {
+                                                <option value="@code">@code</option>
+                                            }
+                                        </select>
                                     </div>
                                 </div>
                             </div>
@@ -574,11 +595,12 @@
                                 <div class="row g-3">
                                     <div class="col-md-6">
                                         <label class="form-label">تاريخ التسليم *</label>
-                                        <input type="date" class="form-control" asp-for="NewOrder.DeliveryDate" required>
+                                        <input type="date" class="form-control" asp-for="NewOrder.DeliveryDate" id="deliveryDate" required>
+                                        <input type="text" class="form-control" id="deliveryDateMessage" value="لم يتم تحديد التاريخ بعد (قيد الانتظار)" readonly style="display:none; background-color: #f8f9fa; color: #6c757d;">
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label">الحالة *</label>
-                                        <select class="form-select" asp-for="NewOrder.Status" required>
+                                        <select class="form-select" asp-for="NewOrder.Status" id="orderStatus" required>
                                             <option value="">-- اختر الحالة --</option>
                                             <option value="Pending">(قيد الانتظار)</option>
                                             <option value="In Transit">(قيد النقل)</option>
@@ -650,6 +672,35 @@
                 const net = pTotal - deductions - advance - custody;
                 netAmount.value = net.toFixed(2);
                 balance.value = net.toFixed(2);
+            }
+
+            const orderStatus = document.getElementById('orderStatus');
+            const deliveryDate = document.getElementById('deliveryDate');
+            const deliveryDateMessage = document.getElementById('deliveryDateMessage');
+
+            function handleStatusChange() {
+                if (orderStatus && orderStatus.value === 'Pending') {
+                    deliveryDate.style.display = 'none';
+                    deliveryDate.disabled = true;
+                    deliveryDate.removeAttribute('required');
+                    
+                    if (deliveryDateMessage) {
+                         deliveryDateMessage.style.display = 'block';
+                    }
+                } else {
+                    deliveryDate.style.display = 'block';
+                    deliveryDate.disabled = false;
+                    deliveryDate.setAttribute('required', 'required');
+                    
+                    if (deliveryDateMessage) {
+                        deliveryDateMessage.style.display = 'none';
+                    }
+                }
+            }
+
+            if (orderStatus) {
+                orderStatus.addEventListener('change', handleStatusChange);
+                handleStatusChange(); // Initial check
             }
 
             [loadingQty, unloadingQty, companyPrice, providerPrice, stampFee, gpsFee, advancePayment, custodyAmount].forEach(element => {

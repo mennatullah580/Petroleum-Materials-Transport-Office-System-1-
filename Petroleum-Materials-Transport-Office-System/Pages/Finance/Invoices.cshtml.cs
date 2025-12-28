@@ -1,8 +1,10 @@
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
+using System.Data;
 
 namespace Petroleum_Materials_Transport_Office_System.Pages.Finance
 {
@@ -34,7 +36,8 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.Finance
 
         public void OnGet()
         {
-            string connectionString = _configuration.GetConnectionString("DefaultConnection");
+            string connectionString = _configuration.GetConnectionString("DefaultConnection") ?? 
+                                    @"Data Source=EPRAHEEM-SABRY\\SQLEXPRESS;Initial Catalog=PetroleumTransportDB;Integrated Security=True;Encrypt=True;Trust Server Certificate=True";
 
             // Complex Query to join all your tables correctly based on your Schema
             string query = @"

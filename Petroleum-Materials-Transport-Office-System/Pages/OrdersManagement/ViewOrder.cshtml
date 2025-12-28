@@ -168,7 +168,7 @@
             <div class="alert alert-danger">
                 <strong>خطأ!</strong> لم يتم العثور على الطلب.
             </div>
-            <a href="/OrdersManagement" class="btn-back">رجوع للقائمة</a>
+            <a href="/OrdersManagement/Index" class="btn-back">رجوع للقائمة</a>
         }
         else
         {
@@ -186,12 +186,17 @@
                 </div>
                 <div class="info-row">
                     <span class="label">تاريخ التسليم:</span>
-                    <span class="value">@Model.Order.DeliveryDate.ToString("dd/MM/yyyy")</span>
+                    <span class="value">
+                        @(Model.Order.DeliveryDate == DateTime.MinValue
+                                            ? "لم يتم التسليم"
+                                            : Model.Order.DeliveryDate.ToString("dd/MM/yyyy"))
+                </span>
+
                 </div>
                 <div class="info-row">
                     <span class="label">الحالة:</span>
                     <span class="value">
-                        @if (Model.Order.Status == "Delivered")
+                    @if (Model.Order.Status == "Delivered")
                         {
                             <span class="status-badge status-completed">Delivered</span>
                         }
@@ -308,11 +313,17 @@
             </div>
 
             <div class="actions-section">
-                <a href="/OrdersManagement" class="btn-back">← رجوع للقائمة</a>
+                <a href="/OrdersManagement/Index" class="btn-back">← رجوع للقائمة</a>
                 <a href="/OrdersManagement/EditOrder/@Model.Order.OrderId" class="btn-edit">✏️ تعديل</a>
-                <form method="post" asp-page-handler="Delete" asp-route-orderId="@Model.Order.OrderId" style="display: inline;">
-                    <button type="submit" class="btn-delete" onclick="return confirm('هل أنت متأكد من حذف هذا الطلب؟')">🗑️ حذف</button>
+                <form method="post" asp-page-handler="Delete" asp-route-orderId="@Model.Order.OrderId">
+                    <button type="submit"
+                            class="btn-delete"
+                            onclick="return confirm('هل أنت متأكد من حذف هذا الطلب؟')">
+                        🗑️ حذف
+                    </button>
                 </form>
+
+
             </div>
         }
     </div>

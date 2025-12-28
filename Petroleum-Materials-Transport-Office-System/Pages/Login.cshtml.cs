@@ -1,15 +1,15 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Data.SqlClient;
-using Petroleum_Materials_Transport_Office_System.Services; // 👈 Add this
+using Petroleum_Materials_Transport_Office_System.Services;
 
 namespace Petroleum_Materials_Transport_Office_System.Pages
 {
     public class LoginModel : PageModel
     {
-        private readonly ActionLogger _actionLogger; // 👈 Add this
+        private readonly ActionLogger _actionLogger;
 
-        public LoginModel(ActionLogger actionLogger) // 👈 Inject logger
+        public LoginModel(ActionLogger actionLogger)
         {
             _actionLogger = actionLogger;
         }
@@ -25,74 +25,85 @@ namespace Petroleum_Materials_Transport_Office_System.Pages
 
         public IActionResult OnPost()
         {
-            if (string.IsNullOrEmpty(Input?.ID) ||
-                string.IsNullOrEmpty(Input.Username) ||
-                string.IsNullOrEmpty(Input.Password))
+            // التحقق من إدخال البيانات
+            if (Input?.EmployeeID == null || string.IsNullOrEmpty(Input.Password))
             {
-                ErrorMessage = "من فضلك أدخل جميع البيانات";
+                ErrorMessage = "من فضلك أدخل الرقم الوظيفي وكلمة المرور";
                 return Page();
             }
 
-            string connectionString = @"Server=DESKTOP-1QHK872;Database=PetroleumTransportDB;Trusted_Connection=True;TrustServerCertificate=True;";
+            string connectionString = @"Data Source=EPRAHEEM-SABRY\SQLEXPRESS;Initial Catalog=PetroleumTransportDB;Integrated Security=True;Encrypt=True;Trust Server Certificate=True";
 
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
-                conn.Open();
-
-                string query = @"
-                    SELECT Role, Name, Department 
-                    FROM Users 
-                    WHERE User_ID = @ID 
-                      AND Username = @Username 
-                      AND Password = @Password";
-
-                using (SqlCommand cmd = new SqlCommand(query, conn))
+                try
                 {
-                    // Use proper SQL parameter type for ID (int)
-                    if (!int.TryParse(Input.ID, out int userId))
-                    {
-                        ErrorMessage = "الرقم الوظيفي غير صالح";
-                        return Page();
-                    }
+                    conn.Open();
 
-                    cmd.Parameters.Add("@ID", System.Data.SqlDbType.Int).Value = userId;
-                    cmd.Parameters.AddWithValue("@Username", Input.Username);
-                    cmd.Parameters.AddWithValue("@Password", Input.Password);
+                    // الاستعلام: نستخدم فقط User_ID والباسورد للتحقق
+                    string query = @"
+                        SELECT User_ID, Username, Name, Role, Department, Email
+                        FROM Users 
+                        WHERE User_ID = @EmployeeID";
 
-                    using (SqlDataReader reader = cmd.ExecuteReader())
-                    {
-                        if (reader.Read())
+                        using (SqlCommand cmd = new SqlCommand(query, conn))
                         {
-                            // ✅ LOG THE LOGIN ACTION
-                            _actionLogger.Log(
-                                user: Input.Username,
-                                action: "تسجيل الدخول",
-                                details: "تم تسجيل الدخول بنجاح"
-                            );
+                            cmd.Parameters.Add("@EmployeeID", System.Data.SqlDbType.Int).Value = Input.EmployeeID;
 
-                            // Store session data
-                            HttpContext.Session.SetString("UserID", Input.ID);
-                            HttpContext.Session.SetString("Username", Input.Username);
-                            HttpContext.Session.SetString("Role", reader["Role"].ToString());
-                            HttpContext.Session.SetString("Name", reader["Name"].ToString());
-                            HttpContext.Session.SetString("Department", reader["Department"].ToString());
+                            using (SqlDataReader reader = cmd.ExecuteReader())
+                            {
+                                if (reader.Read())
+                                {
+                                    // Unified Password Check
+                                    if (Input.Password != "123123")
+                                    {
+                                         ErrorMessage = "كلمة المرور غير صحيحة";
+                                         return Page();
+                                    }
 
-                            return RedirectToPage("/Dashboard");
+                                    string userName = reader["Name"].ToString();
+                                    string username = reader["Username"].ToString();
+                                    string userRole = reader["Role"].ToString();
+                                    string department = reader["Department"].ToString();
+                                    string email = reader["Email"].ToString();
+
+                                    // تسجيل عملية تسجيل الدخول
+                                    _actionLogger.Log(
+                                        user: userName,
+                                        action: "تسجيل الدخول",
+                                        details: $"تم تسجيل الدخول بنجاح - الرقم الوظيفي: {Input.EmployeeID} - Username: {username}"
+                                    );
+
+                                    // حفظ بيانات الجلسة
+                                    HttpContext.Session.SetInt32("UserID", Input.EmployeeID.Value);
+                                    HttpContext.Session.SetString("Username", username); // نحفظه للاستخدام الداخلي
+                                    HttpContext.Session.SetString("Name", userName);
+                                    HttpContext.Session.SetString("Role", userRole);
+                                    HttpContext.Session.SetString("Department", department);
+                                    HttpContext.Session.SetString("Email", email);
+
+                                    return RedirectToPage("/Dashboard");
+                                }
+                                else
+                                {
+                                    ErrorMessage = "الرقم الوظيفي غير صحيح";
+                                    return Page();
+                                }
+                            }
                         }
-                        else
-                        {
-                            ErrorMessage = "الرقم الوظيفي أو اسم المستخدم أو كلمة المرور غير صحيحة";
-                            return Page();
-                        }
-                    }
+                }
+                catch (Exception ex)
+                {
+                    ErrorMessage = "حدث خطأ في الاتصال بقاعدة البيانات";
+                    // يمكنك تسجيل الخطأ هنا
+                    return Page();
                 }
             }
         }
 
         public class LoginInput
         {
-            public string ID { get; set; } = string.Empty;
-            public string Username { get; set; } = string.Empty;
+            public int? EmployeeID { get; set; }
             public string Password { get; set; } = string.Empty;
         }
     }
