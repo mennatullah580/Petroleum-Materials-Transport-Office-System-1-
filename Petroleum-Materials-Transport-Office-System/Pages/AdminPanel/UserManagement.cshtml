@@ -15,6 +15,26 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
     <style>
+        .btn-search {
+            background-color: #567C8D;
+            border-color: #567C8D;
+            color: white;
+            font-weight: 500;
+        }
+
+        .btn-refresh {
+            background-color: #567C8D; /* Matches your UI */
+            border-color: #567C8D;
+            color: white;
+            font-weight: 500;
+            padding: 6px 12px;
+        }
+
+            .btn-search:hover, .btn-refresh:hover {
+                background-color: #4a6b7a;
+                border-color: #4a6b7a;
+            }
+
         body {
             font-family: 'Cairo', sans-serif;
             background-color: #f8f8f8;
@@ -82,6 +102,11 @@
             background-color: #F5EFE8; /* Beige inside table too */
         }
 
+        .alert {
+            text-align: right;
+            direction: rtl;
+        }
+
         .nav-link {
             color: #333;
             font-weight: 500;
@@ -98,6 +123,7 @@
     <div class="container mt-4">
         <div class="admin-panel">
             <div class="panel-header">لوحة التحكم</div>
+
 
             <!-- Tabs -->
             <ul class="nav nav-tabs mb-3" role="tablist">
@@ -123,10 +149,21 @@
                                    placeholder="بحث عن مستخدم (الاسم، اسم المستخدم، البريد، القسم...)"
                                    value="@Model.SearchTerm" />
                             <button class="btn btn-outline-secondary" type="submit">بحث</button>
+                            <a href="/AdminPanel/UserManagement" class="btn btn-refresh">
+                                تحديث
+                            </a>
                         </div>
                     </form>
 
                     <a href="/AdminPanel/EditUser" class="btn btn-add mb-3">إضافة مستخدم جديد</a>
+
+                    <!-- ✅ Show TempData errors -->
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger">
+                            @TempData["ErrorMessage"]
+                        </div>
+                    }
 
                     <table class="table table-bordered table-striped">
                         <thead class="table-light">
@@ -165,7 +202,7 @@
                                                     حذف
                                                 </button>
                                             </form>
-                                            
+
                                             <!-- ✅ Fixed URL -->
                                             <a href="/AdminPanel/EditUser?id=@user.Id" class="btn btn-action">تعديل</a>
                                         </td>

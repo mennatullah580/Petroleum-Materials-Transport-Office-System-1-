@@ -46,15 +46,31 @@
             margin-top: 15px;
         }
 
-        .table {
-            background-color: #F5EFE8;
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
         }
 
-        th, td {
-            text-align: center;
-            vertical-align: middle;
+        .btn-search {
+            background-color: #567C8D;
+            border-color: #567C8D;
+            color: white;
             font-weight: 500;
         }
+
+        .btn-refresh {
+            background-color: #567C8D; /* Matches your UI */
+            border-color: #567C8D;
+            color: white;
+            font-weight: 500;
+            padding: 6px 12px;
+        }
+
+            .btn-search:hover, .btn-refresh:hover {
+                background-color: #4a6b7a;
+                border-color: #4a6b7a;
+            }
     </style>
 </head>
 <body>
@@ -62,7 +78,6 @@
         <div class="admin-panel">
             <div class="panel-header">لوحة التحكم</div>
 
-            <!-- Tabs -->
             <ul class="nav nav-tabs mb-3" role="tablist">
                 <li class="nav-item">
                     <a class="nav-link" href="/AdminPanel/UserManagement">إدارة المستخدمين</a>
@@ -71,52 +86,50 @@
                     <a class="nav-link active" href="/AdminPanel/SystemLogs">سجلات النظام</a>
                 </li>
             </ul>
-            <!-- Search Form -->
-            <form method="get" class="mb-3">
-                <div class="input-group">
+
+            <div class="tab-content tab-container">
+                <!-- ✅ SIMPLE SEARCH BAR -->
+                <form method="get" class="search-box">
                     <input type="text"
                            name="search"
                            class="form-control"
-                           placeholder="بحث في السجلات (مستخدم، إجراء، تفاصيل...)"
-                           value="@Request.Query["search"]" />
-                    <button class="btn btn-danger " type="submit">بحث</button>
-                </div>
-            </form>
+                           placeholder="ابحث باسم المستخدم (مثل: ahmed_m)"
+                           value="@Model.SearchTerm" />
+                    <button type="submit" class="btn btn-search">بحث</button>
+                    <a href="/AdminPanel/SystemLogs" class="btn btn-refresh">تحديث</a>
+                </form>
 
-            <div class="tab-content tab-container">
-                <div class="tab-pane fade show active">
-                    <!-- Logs Table -->
-                    <table class="table table-bordered table-striped">
-                        <thead class="table-light">
-                            <tr>
-                                <th>الوقت</th>
-                                <th>المستخدم</th>
-                                <th>الإجراء</th>
-                                <th>التفاصيل</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @if (Model.Logs.Any())
-                            {
-                                @foreach (var log in Model.Logs)
-                                {
-                                    <tr>
-                                        <td>@log.Time</td>
-                                        <td>@log.User</td>
-                                        <td>@log.Action</td>
-                                        <td>@log.Details</td>
-                                    </tr>
-                                }
-                            }
-                            else
+                <!-- ✅ SIMPLE LOG TABLE -->
+                <table class="table table-bordered table-striped">
+                    <thead class="table-light">
+                        <tr>
+                            <th>الوقت</th>
+                            <th>المستخدم</th>
+                            <th>الإجراء</th>
+                            <th>التفاصيل</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Logs.Any())
+                        {
+                            @foreach (var log in Model.Logs)
                             {
                                 <tr>
-                                    <td colspan="4" class="text-center">لا توجد سجلات</td>
+                                    <td>@log.Time</td>
+                                    <td>@log.User</td>
+                                    <td>@log.Action</td>
+                                    <td>@log.Details</td>
                                 </tr>
                             }
-                        </tbody>
-                    </table>
-                </div>
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="4" class="text-center">لا توجد سجلات</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>

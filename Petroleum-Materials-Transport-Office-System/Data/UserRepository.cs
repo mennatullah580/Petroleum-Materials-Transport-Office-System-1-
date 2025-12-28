@@ -44,6 +44,17 @@ public class UserRepository
         return users;
     }
 
+    public string? GetUserRoleById(int userId)
+    {
+        using var con = new SqlConnection(_connectionString);
+        con.Open();
+        using var cmd = new SqlCommand("SELECT Role FROM Users WHERE User_ID = @Id", con);
+        cmd.Parameters.Add("@Id", SqlDbType.Int).Value = userId;
+
+        var result = cmd.ExecuteScalar();
+        return result?.ToString();
+    }
+
     public UserModel? GetUserById(int id)
     {
         using var con = new SqlConnection(_connectionString);
@@ -133,47 +144,49 @@ public class UserRepository
 
         if (user.Id == 0)
         {
-            // INSERT - password is required
-            const string insertQuery = @"
+            // INSERT - password required
+            if (string.IsNullOrWhiteSpace(user.Password))
+                throw new ArgumentException("Password is required for new users.");
+
+            const string query = @"
             INSERT INTO Users (Username, Password, Email, Name, Role, Department, Phone_Number, Created_At)
             VALUES (@Username, @Password, @Email, @Name, @Role, @Department, @Phone_Number, GETDATE())";
 
-            using var cmd = new SqlCommand(insertQuery, con);
+            using var cmd = new SqlCommand(query, con);
             cmd.Parameters.AddWithValue("@Username", user.Username);
-            cmd.Parameters.AddWithValue("@Password", user.Password); // Required for new users
-            cmd.Parameters.AddWithValue("@Email", user.Email ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@Password", user.Password);
+            cmd.Parameters.AddWithValue("@Email", string.IsNullOrEmpty(user.Email) ? (object)DBNull.Value : user.Email);
             cmd.Parameters.AddWithValue("@Name", user.FullName);
             cmd.Parameters.AddWithValue("@Role", user.Role);
-            cmd.Parameters.AddWithValue("@Department", user.Department ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@Phone_Number", user.Phone ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@Department", string.IsNullOrEmpty(user.Department) ? (object)DBNull.Value : user.Department);
+            cmd.Parameters.AddWithValue("@Phone_Number", string.IsNullOrEmpty(user.Phone) ? (object)DBNull.Value : user.Phone);
             cmd.ExecuteNonQuery();
         }
         else
         {
-            // UPDATE - password optional
-            var query = @"
-            UPDATE Users SET
-                Username = @Username,
-                Email = @Email,
-                Name = @Name,
-                Role = @Role,
-                Department = @Department,
-                Phone_Number = @Phone_Number";
+            // UPDATE - only update password if provided
+            var setClause = @"
+            Username = @Username,
+            Email = @Email,
+            Name = @Name,
+            Role = @Role,
+            Department = @Department,
+            Phone_Number = @Phone_Number";
 
             if (!string.IsNullOrEmpty(user.Password))
             {
-                query += ", Password = @Password";
+                setClause += ", Password = @Password";
             }
 
-            query += " WHERE User_ID = @User_ID";
+            var query = $"UPDATE Users SET {setClause} WHERE User_ID = @User_ID";
 
             using var cmd = new SqlCommand(query, con);
             cmd.Parameters.AddWithValue("@Username", user.Username);
-            cmd.Parameters.AddWithValue("@Email", user.Email ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@Email", string.IsNullOrEmpty(user.Email) ? (object)DBNull.Value : user.Email);
             cmd.Parameters.AddWithValue("@Name", user.FullName);
             cmd.Parameters.AddWithValue("@Role", user.Role);
-            cmd.Parameters.AddWithValue("@Department", user.Department ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@Phone_Number", user.Phone ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@Department", string.IsNullOrEmpty(user.Department) ? (object)DBNull.Value : user.Department);
+            cmd.Parameters.AddWithValue("@Phone_Number", string.IsNullOrEmpty(user.Phone) ? (object)DBNull.Value : user.Phone);
             cmd.Parameters.AddWithValue("@User_ID", user.Id);
 
             if (!string.IsNullOrEmpty(user.Password))
@@ -191,11 +204,12 @@ public class UserRepository
         using var con = new SqlConnection(_connectionString);
         con.Open();
 
-        // Search in Name, Username, Email, Department
+        // ✅ Search by ID (if search term is numeric) OR other fields
         string query = @"
         SELECT User_ID, Username, Email, Name, Role, Department, Phone_Number
         FROM Users
         WHERE @SearchTerm IS NULL 
+           OR User_ID = @SearchId
            OR Name LIKE '%' + @SearchTerm + '%'
            OR Username LIKE '%' + @SearchTerm + '%'
            OR Email LIKE '%' + @SearchTerm + '%'
@@ -203,7 +217,16 @@ public class UserRepository
         ORDER BY User_ID";
 
         using var cmd = new SqlCommand(query, con);
+
+        // Handle ID search: if searchTerm is a number, use it for User_ID
+        int? searchId = null;
+        if (int.TryParse(searchTerm, out int id))
+        {
+            searchId = id;
+        }
+
         cmd.Parameters.AddWithValue("@SearchTerm", (object?)searchTerm ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("@SearchId", (object?)searchId ?? DBNull.Value);
 
         using var reader = cmd.ExecuteReader();
         while (reader.Read())
@@ -223,28 +246,16 @@ public class UserRepository
         return users;
     }
 
-    public bool IsUsernameTaken(string username, int? excludeUserId = null)
-    {
-        using var con = new SqlConnection(_connectionString);
-        con.Open();
-        string query = excludeUserId.HasValue
-            ? "SELECT COUNT(*) FROM Users WHERE Username = @Username AND User_ID <> @ExcludeId"
-            : "SELECT COUNT(*) FROM Users WHERE Username = @Username";
 
-        using var cmd = new SqlCommand(query, con);
-        cmd.Parameters.Add("@Username", SqlDbType.NVarChar).Value = username;
-        if (excludeUserId.HasValue)
-            cmd.Parameters.Add("@ExcludeId", SqlDbType.Int).Value = excludeUserId.Value;
-
-        return (int)cmd.ExecuteScalar() > 0;
-    }
 
     public bool IsEmailTaken(string email, int? excludeUserId = null)
     {
-        if (string.IsNullOrEmpty(email)) return false;
+        if (string.IsNullOrWhiteSpace(email)) return false;
 
         using var con = new SqlConnection(_connectionString);
         con.Open();
+
+        // ✅ Key: Exclude current user by ID
         string query = excludeUserId.HasValue
             ? "SELECT COUNT(*) FROM Users WHERE Email = @Email AND User_ID <> @ExcludeId"
             : "SELECT COUNT(*) FROM Users WHERE Email = @Email";
@@ -257,8 +268,22 @@ public class UserRepository
         return (int)cmd.ExecuteScalar() > 0;
     }
 
-    internal bool IsUsernameTaken(object username)
+    public bool IsUsernameTaken(string username, int? excludeUserId = null)
     {
-        throw new NotImplementedException();
+        if (string.IsNullOrWhiteSpace(username)) return false;
+
+        using var con = new SqlConnection(_connectionString);
+        con.Open();
+
+        string query = excludeUserId.HasValue
+            ? "SELECT COUNT(*) FROM Users WHERE Username = @Username AND User_ID <> @ExcludeId"
+            : "SELECT COUNT(*) FROM Users WHERE Username = @Username";
+
+        using var cmd = new SqlCommand(query, con);
+        cmd.Parameters.Add("@Username", SqlDbType.NVarChar).Value = username;
+        if (excludeUserId.HasValue)
+            cmd.Parameters.Add("@ExcludeId", SqlDbType.Int).Value = excludeUserId.Value;
+
+        return (int)cmd.ExecuteScalar() > 0;
     }
 }
