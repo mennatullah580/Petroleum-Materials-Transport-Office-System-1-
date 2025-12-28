@@ -256,4 +256,9 @@ public class UserRepository
 
         return (int)cmd.ExecuteScalar() > 0;
     }
+
+    internal bool IsUsernameTaken(object username)
+    {
+        throw new NotImplementedException();
+    }
 }

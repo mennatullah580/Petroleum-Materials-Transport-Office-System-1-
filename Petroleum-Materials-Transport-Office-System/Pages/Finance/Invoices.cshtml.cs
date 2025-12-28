@@ -37,7 +37,8 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.Finance
         public void OnGet()
         {
             string connectionString = _configuration.GetConnectionString("DefaultConnection") ?? 
-                                    @"Data Source=EPRAHEEM-SABRY\\SQLEXPRESS;Initial Catalog=PetroleumTransportDB;Integrated Security=True;Encrypt=True;Trust Server Certificate=True";
+                                    @"
+Security=True;Encrypt=True;Trust Server Certificate=True";
 
             // Complex Query to join all your tables correctly based on your Schema
             string query = @"

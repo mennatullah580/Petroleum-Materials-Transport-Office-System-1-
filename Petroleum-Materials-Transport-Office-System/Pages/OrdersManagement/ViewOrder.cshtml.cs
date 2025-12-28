@@ -8,7 +8,7 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.OrdersManagement
     public class ViewOrderModel : PageModel
     {
         private readonly string _connectionString =
-            @"Data Source=EPRAHEEM-SABRY\SQLEXPRESS;Initial Catalog=PetroleumTransportDB;Integrated Security=True;Encrypt=True;Trust Server Certificate=True";
+            @"Server=DESKTOP-1QHK872;Database=PetroleumTransportDB;Trusted_Connection=True;TrustServerCertificate=True;";
 
         public Order? Order { get; set; }
 
@@ -70,7 +70,7 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.OrdersManagement
 
             using SqlDataReader r = cmd.ExecuteReader();
             if (!r.Read())
-                return RedirectToPage("/OrdersManagement/Index");
+                return RedirectToPage("/OrdersManagement");
 
             decimal loadingQty = r["Loading_Quantity"] == DBNull.Value ? 0 : Convert.ToDecimal(r["Loading_Quantity"]);
             decimal unloadingQty = r["Unloading_Quantity"] == DBNull.Value ? 0 : Convert.ToDecimal(r["Unloading_Quantity"]);
@@ -149,7 +149,7 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.OrdersManagement
             }
 
             // ✅ الرجوع للصفحة الرئيسية - المسار الصحيح
-            return RedirectToPage("/OrdersManagement/Index");
+            return RedirectToPage("/OrdersManagement");
         }
     }
 }

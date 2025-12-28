@@ -7,7 +7,7 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.OrdersManagement
 {
     public class EditOrderModel : PageModel
     {
-        private readonly string _connectionString = @"Data Source=EPRAHEEM-SABRY\SQLEXPRESS;Initial Catalog=PetroleumTransportDB;Integrated Security=True;Encrypt=True;Trust Server Certificate=True";
+        private readonly string _connectionString = @"Server=DESKTOP-1QHK872;Database=PetroleumTransportDB;Trusted_Connection=True;TrustServerCertificate=True;";
 
         [BindProperty]
         public Order Order { get; set; }
@@ -73,8 +73,11 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.OrdersManagement
             if (Order == null)
             {
                 TempData["Error"] = "لم يتم العثور على الطلب";
-                return RedirectToPage("/OrdersManagement/Index");
+                return RedirectToPage("/OrdersManagement");
             }
+
+
+
 
             return Page();
         }
@@ -407,7 +410,7 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.OrdersManagement
                 return Page();
             }
 
-            return RedirectToPage("/OrdersManagement/Index");
+            return RedirectToPage("/OrdersManagement");
         }
 
         public IActionResult OnPostDelete(int orderId)
@@ -453,7 +456,7 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.OrdersManagement
                 return Page();
             }
 
-            return RedirectToPage("/OrdersManagement/Index");
+            return RedirectToPage("/OrdersManagement");
         }
 
         private int GetProviderIdByName(string providerName, SqlConnection conn, SqlTransaction transaction)
