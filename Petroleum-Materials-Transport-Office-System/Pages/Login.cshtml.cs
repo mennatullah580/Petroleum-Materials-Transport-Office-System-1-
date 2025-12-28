@@ -32,7 +32,7 @@ namespace Petroleum_Materials_Transport_Office_System.Pages
                 return Page();
             }
 
-            string connectionString = @"Data Source=EPRAHEEM-SABRY\SQLEXPRESS;Initial Catalog=PetroleumTransportDB;Integrated Security=True;Encrypt=True;Trust Server Certificate=True";
+            string connectionString = @"Server=DESKTOP-1QHK872;Database=PetroleumTransportDB;Trusted_Connection=True;TrustServerCertificate=True;;";
 
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
@@ -55,7 +55,7 @@ namespace Petroleum_Materials_Transport_Office_System.Pages
                                 if (reader.Read())
                                 {
                                     // Unified Password Check
-                                    if (Input.Password != "123123")
+                                    if (Input.Password != "123")
                                     {
                                          ErrorMessage = "كلمة المرور غير صحيحة";
                                          return Page();
