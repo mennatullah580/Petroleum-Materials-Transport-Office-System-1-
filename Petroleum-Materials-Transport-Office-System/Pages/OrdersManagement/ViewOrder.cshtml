@@ -189,7 +189,7 @@
                     <span class="value">
                         @(Model.Order.DeliveryDate == DateTime.MinValue
                                             ? "لم يتم التسليم"
-                                            : Model.Order.DeliveryDate.ToString("dd/MM/yyyy"))
+                                            : @Model.Order.DeliveryDate?.ToString("dd/MM/yyyy"))
                 </span>
 
                 </div>

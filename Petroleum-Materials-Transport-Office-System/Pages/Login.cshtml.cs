@@ -32,7 +32,7 @@ namespace Petroleum_Materials_Transport_Office_System.Pages
                 return Page();
             }
 
-            string connectionString = @"Data Source=EPRAHEEM-SABRY\SQLEXPRESS;Initial Catalog=PetroleumTransportDB;Integrated Security=True;Encrypt=True;Trust Server Certificate=True";
+            string connectionString = @"Data Source=.;Initial Catalog=PetroleumTransportDB2;Integrated Security=True;Encrypt=True;Trust Server Certificate=True";
 
             using (SqlConnection conn = new SqlConnection(connectionString))
             {

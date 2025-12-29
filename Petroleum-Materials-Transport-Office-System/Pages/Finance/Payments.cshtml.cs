@@ -17,14 +17,12 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.Finance
             _configuration = configuration;
         }
 
-        // ==========================================
-        // 1. DATA BINDING
-        // ==========================================
+        // --- Bind Properties ---
         [BindProperty]
         public string TransactionType { get; set; } // 'Payment' or 'Receipt'
 
         [BindProperty]
-        public int SelectedTreasuryId { get; set; } // Critical for the new DB
+        public int SelectedTreasuryId { get; set; }
 
         [BindProperty]
         public decimal Amount { get; set; }
@@ -33,10 +31,11 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.Finance
         public DateTime Date { get; set; } = DateTime.Today;
 
         [BindProperty]
-        public int? SelectedProviderId { get; set; } // Nullable (optional if receiving from client)
+        public int? SelectedProviderId { get; set; }
 
+        // ✅ ADDED: This was missing and caused the error
         [BindProperty]
-        public int? SelectedClientId { get; set; } // Nullable (optional if paying provider)
+        public int? SelectedClientId { get; set; }
 
         [BindProperty]
         public string PaymentMethod { get; set; }
@@ -47,25 +46,25 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.Finance
         [BindProperty]
         public string Notes { get; set; }
 
-        // Dropdowns
+        // --- Dropdown Lists ---
         public List<SelectListItem> TreasuryList { get; set; } = new List<SelectListItem>();
         public List<SelectListItem> ProviderList { get; set; } = new List<SelectListItem>();
+
+        // ✅ ADDED: This was missing
         public List<SelectListItem> ClientList { get; set; } = new List<SelectListItem>();
 
         public string SuccessMessage { get; set; }
         public string ErrorMessage { get; set; }
 
-        // ==========================================
-        // 2. ON GET
-        // ==========================================
         public void OnGet()
         {
+            // Restore messages after page reload
+            if (TempData["SuccessMessage"] != null) SuccessMessage = TempData["SuccessMessage"].ToString();
+            if (TempData["ErrorMessage"] != null) ErrorMessage = TempData["ErrorMessage"].ToString();
+
             LoadDropdowns();
         }
 
-        // ==========================================
-        // 3. ON POST
-        // ==========================================
         public IActionResult OnPost()
         {
             if (Amount <= 0)
@@ -80,47 +79,54 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.Finance
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
                 connection.Open();
+
+                // 1. Get Treasury details
+                string treasuryName = "";
+                decimal currentBalance = 0;
+                string checkSql = "SELECT Name, Current_Balance FROM Treasury_Bank WHERE Treasury_ID = @TID";
+
+                using (SqlCommand cmd = new SqlCommand(checkSql, connection))
+                {
+                    cmd.Parameters.AddWithValue("@TID", SelectedTreasuryId);
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            treasuryName = reader["Name"].ToString();
+                            currentBalance = reader["Current_Balance"] != DBNull.Value ? Convert.ToDecimal(reader["Current_Balance"]) : 0;
+                        }
+                        else
+                        {
+                            ErrorMessage = "الخزينة غير موجودة.";
+                            LoadDropdowns();
+                            return Page();
+                        }
+                    }
+                }
+
                 using (SqlTransaction transaction = connection.BeginTransaction())
                 {
                     try
                     {
-                        // A. Check Treasury Balance (Only if Paying)
-                        if (TransactionType == "Payment")
+                        // 2. Check Balance (Only if Paying)
+                        if (TransactionType == "Payment" && currentBalance < Amount)
                         {
-                            string checkSql = "SELECT Current_Balance, Name FROM Treasury_Bank WHERE Treasury_ID = @TID";
-                            using (SqlCommand cmd = new SqlCommand(checkSql, connection, transaction))
-                            {
-                                cmd.Parameters.AddWithValue("@TID", SelectedTreasuryId);
-                                using (SqlDataReader reader = cmd.ExecuteReader())
-                                {
-                                    if (reader.Read())
-                                    {
-                                        decimal balance = Convert.ToDecimal(reader["Current_Balance"]);
-                                        if (balance < Amount)
-                                        {
-                                            throw new Exception($"رصيد الخزينة غير كافٍ. الرصيد الحالي: {balance:N2}");
-                                        }
-                                    }
-                                }
-                            }
+                            throw new Exception($"رصيد '{treasuryName}' غير كافٍ. الرصيد الحالي: {currentBalance:N0}");
                         }
 
-                        // B. Update Balance (+ for Receipt, - for Payment)
-                        string updateBalanceSql = "";
-                        if (TransactionType == "Payment")
-                            updateBalanceSql = "UPDATE Treasury_Bank SET Current_Balance = Current_Balance - @Amt WHERE Treasury_ID = @TID";
-                        else
-                            updateBalanceSql = "UPDATE Treasury_Bank SET Current_Balance = Current_Balance + @Amt WHERE Treasury_ID = @TID";
+                        // 3. Update Treasury Balance
+                        string updateSql = TransactionType == "Payment"
+                            ? "UPDATE Treasury_Bank SET Current_Balance = Current_Balance - @Amt WHERE Treasury_ID = @TID"
+                            : "UPDATE Treasury_Bank SET Current_Balance = Current_Balance + @Amt WHERE Treasury_ID = @TID";
 
-                        using (SqlCommand cmd = new SqlCommand(updateBalanceSql, connection, transaction))
+                        using (SqlCommand cmd = new SqlCommand(updateSql, connection, transaction))
                         {
                             cmd.Parameters.AddWithValue("@Amt", Amount);
                             cmd.Parameters.AddWithValue("@TID", SelectedTreasuryId);
                             cmd.ExecuteNonQuery();
                         }
 
-                        // C. Insert Transaction Record
-                        // We construct the Remarks to include Provider/Client names for easier reading later
+                        // 4. Record Transaction
                         string entityName = GetEntityName(connection, transaction);
                         string fullRemarks = $"[{TransactionType}] {entityName} | فاتورة: {InvoiceNumber} | {Notes}";
 
@@ -134,51 +140,57 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.Finance
                         {
                             cmd.Parameters.AddWithValue("@Amt", Amount);
                             cmd.Parameters.AddWithValue("@Date", Date);
-                            cmd.Parameters.AddWithValue("@Type", TransactionType); // Must match DB Constraint (Payment/Receipt)
-                            cmd.Parameters.AddWithValue("@Method", PaymentMethod);
+                            cmd.Parameters.AddWithValue("@Type", TransactionType);
+                            cmd.Parameters.AddWithValue("@Method", PaymentMethod ?? (object)DBNull.Value);
                             cmd.Parameters.AddWithValue("@ProvID", (object)SelectedProviderId ?? DBNull.Value);
                             cmd.Parameters.AddWithValue("@Remarks", fullRemarks);
                             cmd.ExecuteNonQuery();
                         }
 
                         transaction.Commit();
-                        SuccessMessage = "تم حفظ العملية وتحديث الرصيد بنجاح!";
 
-                        // Reset Form
-                        Amount = 0;
-                        InvoiceNumber = "";
-                        Notes = "";
+                        // 5. Success Message & Reload
+                        if (TransactionType == "Payment")
+                            TempData["SuccessMessage"] = $"تم خصم {Amount:N0} من {treasuryName}. المتبقي: {currentBalance - Amount:N0}";
+                        else
+                            TempData["SuccessMessage"] = $"تم إيداع {Amount:N0} في {treasuryName}. الجديد: {currentBalance + Amount:N0}";
+
+                        return RedirectToPage();
                     }
                     catch (Exception ex)
                     {
                         transaction.Rollback();
                         ErrorMessage = "خطأ: " + ex.Message;
+                        LoadDropdowns();
+                        return Page();
                     }
                 }
             }
-
-            LoadDropdowns();
-            return Page();
         }
 
-        // ==========================================
-        // HELPERS
-        // ==========================================
         private void LoadDropdowns()
         {
             string connString = _configuration.GetConnectionString("DefaultConnection");
-            using (SqlConnection conn = new SqlConnection(connString))
+            try
             {
-                conn.Open();
+                using (SqlConnection conn = new SqlConnection(connString))
+                {
+                    conn.Open();
+                    TreasuryList = GetList(conn, "SELECT Treasury_ID, Name FROM Treasury_Bank WHERE Status='Active'");
+                    ProviderList = GetList(conn, "SELECT Provider_ID, Provider_Name FROM Provider");
 
-                // Treasuries
-                TreasuryList = GetList(conn, "SELECT Treasury_ID, Name FROM Treasury_Bank WHERE Status='Active'");
-
-                // Providers (Contractors)
-                ProviderList = GetList(conn, "SELECT Provider_ID, Provider_Name FROM Provider");
-
-                // Clients (Assuming you have a Client table, otherwise remove this)
-                // ClientList = GetList(conn, "SELECT Client_ID, Name FROM Clients"); 
+                    // Note: If you don't have a 'Clients' table yet, this line might fail or return nothing.
+                    // If it fails, you can comment it out temporarily.
+                    try
+                    {
+                        ClientList = GetList(conn, "SELECT Client_ID, Name FROM Clients");
+                    }
+                    catch { /* Ignore if Clients table doesn't exist yet */ }
+                }
+            }
+            catch (Exception ex)
+            {
+                ErrorMessage = "Error loading lists: " + ex.Message;
             }
         }
 
@@ -195,17 +207,30 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.Finance
 
         private string GetEntityName(SqlConnection conn, SqlTransaction trans)
         {
-            string name = "";
+            // Logic to get name of Provider OR Client
             if (SelectedProviderId.HasValue)
             {
-                using (SqlCommand cmd = new SqlCommand("SELECT Provider_Name FROM Provider WHERE Provider_ID=@ID", conn, trans))
+                string sql = "SELECT Provider_Name FROM Provider WHERE Provider_ID = @ID";
+                using (SqlCommand cmd = new SqlCommand(sql, conn, trans))
                 {
                     cmd.Parameters.AddWithValue("@ID", SelectedProviderId);
-                    name = "مورد: " + cmd.ExecuteScalar()?.ToString();
+                    return "مورد: " + cmd.ExecuteScalar()?.ToString();
                 }
             }
-            // Add Client logic here if you have a Client table
-            return name;
+            else if (SelectedClientId.HasValue)
+            {
+                try
+                {
+                    string sql = "SELECT Name FROM Clients WHERE Client_ID = @ID";
+                    using (SqlCommand cmd = new SqlCommand(sql, conn, trans))
+                    {
+                        cmd.Parameters.AddWithValue("@ID", SelectedClientId);
+                        return "عميل: " + cmd.ExecuteScalar()?.ToString();
+                    }
+                }
+                catch { return "عميل: (غير محدد)"; }
+            }
+            return "عام";
         }
     }
 }

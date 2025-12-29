@@ -8,7 +8,7 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.Master_Lists
 {
     public class Financial_ConfigurationModel : PageModel
     {
-        private readonly string _connectionString = "Server=DESKTOP-1QHK872; Database=PetroleumTransportDB; Integrated Security=True; TrustServerCertificate=True;";
+        private readonly string _connectionString = "Server=.; Database=PetroleumTransportDB2; Integrated Security=True; TrustServerCertificate=True;";
 
         public List<TreasuryModel> Treasuries { get; set; } = new List<TreasuryModel>();
         public List<ExpenseModel> Expenses { get; set; } = new List<ExpenseModel>();

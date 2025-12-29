@@ -9,7 +9,7 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.Master_Lists
 {
     public class ResourcesModel : PageModel
     {
-        private readonly string _connString = "Server=.; Database=PetroleumTransportDB; Integrated Security=True; TrustServerCertificate=True;";
+        private readonly string _connString = "Server=.; Database=PetroleumTransportDB2; Integrated Security=True; TrustServerCertificate=True;";
 
         public List<VehicleDto> Vehicles { get; set; } = new List<VehicleDto>();
         public List<DriverDto> Drivers { get; set; } = new List<DriverDto>();
