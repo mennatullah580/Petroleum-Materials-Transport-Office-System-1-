@@ -1,9 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore; // Required for .Include()
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
 using Petroleum_Materials_Transport_Office_System.Data;
 using Petroleum_Materials_Transport_Office_System.Models;
 using System;
-using System.Data;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Petroleum_Materials_Transport_Office_System.Pages.Finance
@@ -18,84 +19,104 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.Finance
         }
 
         public string ReportTitle { get; set; }
-        public DataTable ReportData { get; set; }
-        public decimal TotalSum { get; set; }
+        public List<ReportItem> ReportData { get; set; } = new List<ReportItem>();
+        public decimal TotalAmount { get; set; }
+        public string FromDateStr { get; set; }
+        public string ToDateStr { get; set; }
 
-        public void OnGet(string reportType, DateTime? fromDate, DateTime? toDate, string customerName, string providerName)
+        public void OnGet(string reportType, string fromDate, string toDate, int? fuelId, int? customerId, int? providerId, string? locationCode)
         {
-            ReportData = new DataTable();
-            TotalSum = 0;
+            if (string.IsNullOrEmpty(fromDate)) fromDate = DateTime.Today.AddDays(-30).ToString("yyyy-MM-dd");
+            if (string.IsNullOrEmpty(toDate)) toDate = DateTime.Today.ToString("yyyy-MM-dd");
 
-            // 1. Join Tables using .Include
-            var query = _context.Invoice
-                .Include(i => i.Company)   // Join with Company table
-                .Include(i => i.Provider)  // Join with Provider table
-                .AsQueryable();
+            FromDateStr = fromDate;
+            ToDateStr = toDate;
 
-            // 2. Filter Logic
-            if (fromDate.HasValue)
+            DateTime start = DateTime.Parse(fromDate);
+            DateTime end = DateTime.Parse(toDate).AddDays(1).AddSeconds(-1); // Includes the full end day
+
+            if (reportType == "orders_detailed")
             {
-                // Note: The property is now correctly mapped to 'Issue_Date' in the DB
-                query = query.Where(x => x.Date >= fromDate.Value);
+                LoadOrdersReport(start, end, fuelId, customerId, providerId, locationCode);
             }
-
-            if (toDate.HasValue)
+            else if (reportType == "debts" || reportType == "invoices_list")
             {
-                query = query.Where(x => x.Date <= toDate.Value);
+                LoadInvoicesReport(start, end, customerId, reportType);
             }
-
-            // Filter by Customer Name (Searching inside the related Company table)
-            if (!string.IsNullOrEmpty(customerName))
+            else
             {
-                query = query.Where(x => x.Company.Company_Name.Contains(customerName));
-            }
-
-            // Filter by Provider Name
-            if (!string.IsNullOrEmpty(providerName))
-            {
-                query = query.Where(x => x.Provider.Provider_Name.Contains(providerName));
-            }
-
-            // 3. Generate Report
-            switch (reportType)
-            {
-                case "details":
-                default:
-                    ReportTitle = "تقرير الفواتير التفصيلي";
-                    GenerateDetailsReport(query);
-                    break;
+                ReportTitle = "تقرير غير محدد";
             }
         }
 
-        private void GenerateDetailsReport(IQueryable<Invoice> query)
+        private void LoadOrdersReport(DateTime start, DateTime end, int? fuelId, int? customerId, int? providerId, string? locationCode)
         {
-            // Define Columns
-            ReportData.Columns.Add("رقم الفاتورة");
-            ReportData.Columns.Add("التاريخ");
-            ReportData.Columns.Add("العميل");
-            ReportData.Columns.Add("المقاول");
-            ReportData.Columns.Add("الحالة");
-            ReportData.Columns.Add("الصافي (EGP)");
+            ReportTitle = "تفاصيل النقل والماليات";
 
-            var result = query.ToList();
+            var query = _context.Financials
+                .Include(f => f.Order)
+                    .ThenInclude(o => o.Provider)
+                .Include(f => f.Order)
+                    .ThenInclude(o => o.FuelType)
+                .Where(f => f.Order.OrderDate >= start && f.Order.OrderDate <= end);
 
-            foreach (var item in result)
+            if (fuelId.HasValue) query = query.Where(f => f.Order.PetroleumTypeId == fuelId.Value);
+            if (providerId.HasValue) query = query.Where(f => f.Order.ProviderId == providerId.Value);
+            if (!string.IsNullOrEmpty(locationCode))
+                query = query.Where(f => f.Order.LoadingLocation == locationCode || f.Order.UnloadingLocation == locationCode);
+
+            var list = query.ToList();
+
+            ReportData = list.Select(item => new ReportItem
             {
-                // Safely handle nulls using '?'
-                string custName = item.Company != null ? item.Company.Company_Name : "غير معروف";
-                string provName = item.Provider != null ? item.Provider.Provider_Name : "-";
+                Id = item.Order_ID.ToString(),
+                // FIX: Pass the DateTime object directly, NOT a string
+                Date = item.Order?.OrderDate ?? DateTime.MinValue,
+                Name = item.Order?.Provider?.Provider_Name ?? "غير محدد",
+                Type = (item.Order?.FuelType?.Type_Name ?? "وقود") + " (" + (item.Order?.LoadingQuantity.ToString() ?? "0") + " طن)",
+                Amount = item.Company_Total,
+                Notes = item.Order?.Status ?? "-"
+            }).ToList();
 
-                ReportData.Rows.Add(
-                    item.InvoiceNumber,
-                    item.Date.ToString("yyyy-MM-dd"),
-                    custName,
-                    provName,
-                    item.Status,
-                    item.Net.ToString("N2")
-                );
-            }
+            TotalAmount = ReportData.Sum(x => x.Amount);
+        }
 
-            TotalSum = result.Sum(x => x.Net);
+        private void LoadInvoicesReport(DateTime start, DateTime end, int? customerId, string type)
+        {
+            ReportTitle = (type == "debts") ? "ديون العملاء" : "قائمة الفواتير";
+
+            var query = _context.Invoice
+                .Include(i => i.Company)
+                .Where(i => i.Date >= start && i.Date <= end);
+
+            if (customerId.HasValue) query = query.Where(i => i.CompanyId == customerId.Value);
+
+            var list = query.ToList();
+
+            ReportData = list.Select(i => new ReportItem
+            {
+                Id = i.InvoiceNumber,
+                // FIX: Pass the DateTime object directly
+                Date = i.Date,
+                Name = i.Company?.Company_Name ?? "-",
+                Type = "فاتورة بيع",
+                Amount = i.CompanyAmount,
+                Notes = i.Status
+            }).ToList();
+
+            TotalAmount = ReportData.Sum(x => x.Amount);
+        }
+
+        // --- THE MOST IMPORTANT FIX ---
+        // Change 'Date' from 'string' to 'DateTime'
+        public class ReportItem
+        {
+            public string Id { get; set; }
+            public DateTime Date { get; set; } // This allows .ToString("yyyy-MM-dd") in HTML
+            public string Name { get; set; }
+            public string Type { get; set; }
+            public decimal Amount { get; set; }
+            public string Notes { get; set; }
         }
     }
 }

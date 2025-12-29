@@ -2,8 +2,8 @@
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Petroleum_Materials_Transport_Office_System.Data;
-using Petroleum_Materials_Transport_Office_System.Models;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 
@@ -16,12 +16,17 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.Finance
         public ReportsModel(ApplicationDbContext context)
         {
             _context = context;
+            // Initialize default dates
+            Input = new InputModel
+            {
+                FromDate = DateTime.Today.AddDays(-30),
+                ToDate = DateTime.Today
+            };
         }
 
         [BindProperty]
-        public ReportInputModel Input { get; set; }
+        public InputModel Input { get; set; }
 
-        // Dropdown Lists
         public SelectList FuelOptions { get; set; }
         public SelectList CustomerOptions { get; set; }
         public SelectList ProviderOptions { get; set; }
@@ -29,22 +34,29 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.Finance
 
         public void OnGet()
         {
-            PopulateDropdowns();
+            LoadDropdowns();
         }
 
         public IActionResult OnPost()
         {
+            // Always reload dropdowns first, in case we have to return to this page (if there is an error)
+            LoadDropdowns();
+
             if (!ModelState.IsValid)
             {
-                PopulateDropdowns();
                 return Page();
             }
 
+            // SUCCESS: Redirect to the ReportViewer page
+            // We pass the user's choices as "Query String" parameters
             return RedirectToPage("ReportViewer", new
             {
                 reportType = Input.ReportType,
-                fromDate = Input.FromDate?.ToString("yyyy-MM-dd"),
-                toDate = Input.ToDate?.ToString("yyyy-MM-dd"),
+                // Format dates safely for the URL
+                fromDate = Input.FromDate.ToString("yyyy-MM-dd"),
+                toDate = Input.ToDate.ToString("yyyy-MM-dd"),
+
+                // Pass optional IDs
                 fuelId = Input.FuelId,
                 customerId = Input.CustomerId,
                 providerId = Input.ProviderId,
@@ -52,49 +64,35 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.Finance
             });
         }
 
-        private void PopulateDropdowns()
+        private void LoadDropdowns()
         {
-            // Now these lines will work because we updated the DbContext
-            var fuels = _context.Fuel_Type
-                .Where(x => x.Status == "Active")
-                .Select(x => new { x.Fuel_ID, x.Type_Name })
-                .ToList();
-            FuelOptions = new SelectList(fuels, "Fuel_ID", "Type_Name");
+            // Fuel (Fuel_ID is int)
+            FuelOptions = new SelectList(_context.Fuel_Type.ToList(), "Fuel_ID", "Type_Name");
 
-            var customers = _context.Company
-                .Where(x => x.Status == "Active")
-                .Select(x => new { x.Company_ID, x.Company_Name })
-                .ToList();
-            CustomerOptions = new SelectList(customers, "Company_ID", "Company_Name");
+            // Customers (Company_ID is int)
+            CustomerOptions = new SelectList(_context.Company.ToList(), "Company_ID", "Company_Name");
 
-            var providers = _context.Provider
-                .Where(x => x.Status == "Active")
-                .Select(x => new { x.Provider_ID, x.Provider_Name })
-                .ToList();
-            ProviderOptions = new SelectList(providers, "Provider_ID", "Provider_Name");
+            // Providers (Provider_ID is int)
+            ProviderOptions = new SelectList(_context.Provider.ToList(), "Provider_ID", "Provider_Name");
 
-            var locations = _context.Location
-                .Where(x => x.Status == "Active")
-                .Select(x => new { x.Location_Code, x.Location_Name })
-                .ToList();
-            LocationOptions = new SelectList(locations, "Location_Code", "Location_Name");
+            // Locations (Location_Code is STRING)
+            LocationOptions = new SelectList(_context.Location.ToList(), "Location_Code", "Location_Name");
         }
 
-        public class ReportInputModel
+        public class InputModel
         {
             [Required(ErrorMessage = "يرجى اختيار نوع التقرير")]
             public string ReportType { get; set; }
 
-            [DataType(DataType.Date)]
-            public DateTime? FromDate { get; set; }
-
-            [DataType(DataType.Date)]
-            public DateTime? ToDate { get; set; }
+            public DateTime FromDate { get; set; }
+            public DateTime ToDate { get; set; }
 
             public int? FuelId { get; set; }
             public int? CustomerId { get; set; }
             public int? ProviderId { get; set; }
-            public string LocationCode { get; set; }
+
+            // Nullable string so the field is not mandatory
+            public string? LocationCode { get; set; }
         }
     }
 }

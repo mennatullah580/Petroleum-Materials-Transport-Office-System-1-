@@ -1,8 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Petroleum_Materials_Transport_Office_System.Models;
 using System.Data;
-using System.Data.SqlClient;
-
+using Microsoft.Data.SqlClient;
 public class UserRepository
 {
     private readonly string _connectionString;

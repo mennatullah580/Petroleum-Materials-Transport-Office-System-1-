@@ -18,9 +18,6 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.Finance
             _configuration = configuration;
         }
 
-        // ==========================================
-        // 1. DATA BINDING
-        // ==========================================
         [BindProperty]
         public int SelectedTreasuryId { get; set; }
 
@@ -47,20 +44,20 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.Finance
         public string SuccessMessage { get; set; }
         public string ErrorMessage { get; set; }
 
-        // ==========================================
-        // 2. ON GET (Load Data)
-        // ==========================================
         public void OnGet()
         {
+            // 1. Check for Success Message from previous Post
+            if (TempData["SuccessMessage"] != null)
+            {
+                SuccessMessage = TempData["SuccessMessage"].ToString();
+            }
+
             LoadDropdowns();
         }
 
-        // ==========================================
-        // 3. ON POST (Save Transaction)
-        // ==========================================
         public IActionResult OnPost()
         {
-            // 1. Basic Validation
+            // 2. Basic Validation
             if (Amount <= 0)
             {
                 ErrorMessage = "يجب إدخال مبلغ أكبر من صفر.";
@@ -74,7 +71,7 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.Finance
             {
                 connection.Open();
 
-                // 2. Get Treasury Details (Check Balance)
+                // 3. Check Balance & Get Treasury Name
                 string treasuryName = "";
                 string treasuryType = "";
                 decimal currentBalance = 0;
@@ -100,7 +97,7 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.Finance
                     }
                 }
 
-                // 3. Check Sufficient Funds
+                // 4. Check Sufficient Funds
                 if (currentBalance < Amount)
                 {
                     ErrorMessage = $"عفواً، رصيد {treasuryName} غير كافٍ. الرصيد الحالي: {currentBalance:N2} ج.م";
@@ -108,11 +105,11 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.Finance
                     return Page();
                 }
 
-                // 4. Get Helper Names (for Remarks)
+                // 5. Get Helper Names
                 string expenseName = GetNameById(connection, "Expense_Item", "Expense_ID", SelectedExpenseId);
                 string costCenterName = GetNameById(connection, "Cost_Center", "CostCenter_ID", SelectedCostCenterId);
 
-                // 5. EXECUTE TRANSACTION (ACID Compliant)
+                // 6. EXECUTE TRANSACTION
                 using (SqlTransaction transaction = connection.BeginTransaction())
                 {
                     try
@@ -127,7 +124,6 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.Finance
                         }
 
                         // B. Insert into Payment_Transaction
-                        // Note: We format the Description to include the Cost Center/Expense Type since the original table might not have those FK columns.
                         string fullRemarks = $"[مصروفات] بند: {expenseName} | مشروع: {costCenterName} | {Description}";
                         string method = (treasuryType == "Bank") ? "Bank Transfer" : "Cash";
 
@@ -147,30 +143,26 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.Finance
 
                         // C. Commit Changes
                         transaction.Commit();
-                        SuccessMessage = "تم تسجيل المصروف وخصم المبلغ بنجاح.";
 
-                        // Clear Form
-                        Amount = 0;
-                        Description = "";
-                        SelectedTreasuryId = 0;
-                        SelectedExpenseId = 0;
-                        SelectedCostCenterId = 0;
+                        // ---------------------------------------------------------
+                        // UPDATED MESSAGE LINE
+                        // ---------------------------------------------------------
+                        TempData["SuccessMessage"] = $"تم بنجاح خصم مبلغ {Amount:N2} ج.م من {treasuryName}.";
+
+                        // Reload page to clear form
+                        return RedirectToPage();
                     }
                     catch (Exception ex)
                     {
                         transaction.Rollback();
                         ErrorMessage = "حدث خطأ أثناء الحفظ: " + ex.Message;
+                        LoadDropdowns();
+                        return Page();
                     }
                 }
             }
-
-            LoadDropdowns();
-            return Page();
         }
 
-        // ==========================================
-        // HELPER METHODS
-        // ==========================================
         private void LoadDropdowns()
         {
             string connectionString = _configuration.GetConnectionString("DefaultConnection");
@@ -179,14 +171,8 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.Finance
                 using (SqlConnection connection = new SqlConnection(connectionString))
                 {
                     connection.Open();
-
-                    // Load Treasuries
                     TreasuryList = GetDropdownList(connection, "SELECT Treasury_ID, Name FROM Treasury_Bank WHERE Status='Active'");
-
-                    // Load Expenses
                     ExpenseList = GetDropdownList(connection, "SELECT Expense_ID, Name FROM Expense_Item");
-
-                    // Load Cost Centers
                     CostCenterList = GetDropdownList(connection, "SELECT CostCenter_ID, Name FROM Cost_Center WHERE Status='Active'");
                 }
             }
