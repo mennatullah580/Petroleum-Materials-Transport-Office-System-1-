@@ -7,7 +7,7 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.OrdersManagement
 {
     public class EditOrderModel : PageModel
     {
-        private readonly string _connectionString = @"Server=.;Database=PetroleumTransportDB;Trusted_Connection=True;TrustServerCertificate=True;";
+        private readonly string _connectionString = "Server=DESKTOP-1QHK872;Database=PetroleumTransportDB;Trusted_Connection=True;TrustServerCertificate=True;";
 
         [BindProperty]
         public Order Order { get; set; }
@@ -18,7 +18,6 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.OrdersManagement
         public List<string> Providers { get; set; } = new List<string>();
         public List<string> Vehicles { get; set; } = new List<string>();
 
-        // 🔥 إضافة قائمة أكواد الجهات
         public List<string> LocationCodes { get; set; } = new List<string>
         {
             "LOC001", "LOC002", "LOC003", "LOC004",
@@ -73,11 +72,8 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.OrdersManagement
             if (Order == null)
             {
                 TempData["Error"] = "لم يتم العثور على الطلب";
-                return RedirectToPage("/OrdersManagement");
+                return Redirect("/OrdersManagement");
             }
-
-
-
 
             return Page();
         }
@@ -149,6 +145,7 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.OrdersManagement
                         o.Shortage,
                         o.Loading_Location,
                         o.Unloading_Location,
+                        o.Agency_Code,
                         
                         p.Provider_Name,
                         v.Plate_number,
@@ -190,8 +187,9 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.OrdersManagement
                     {
                         if (reader.Read())
                         {
-                            // 🔥 حفظ كود الجهة القديم
-                            OldLocationCode = reader["Loading_Location_Code"]?.ToString() ?? "";
+                            // ✅ جلب كود الجهة من Agency_Code
+                            string agencyCode = reader["Agency_Code"]?.ToString() ?? "";
+                            OldLocationCode = agencyCode;
 
                             Order = new Order
                             {
@@ -205,8 +203,8 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.OrdersManagement
                                 UnloadingLocation = reader["Unloading_Location_Name"]?.ToString() ?? "",
                                 PetroleumType = reader["Type_Name"]?.ToString() ?? "",
 
-                                // 🔥 حفظ كود الجهة في Order
-                                LocationCode = reader["Loading_Location_Code"]?.ToString() ?? "",
+                                // ✅ كود الجهة الصحيح من Agency_Code
+                                LocationCode = agencyCode,
 
                                 LoadingQuantity = reader["Loading_Quantity"] != DBNull.Value ? Convert.ToDecimal(reader["Loading_Quantity"]) : 0,
                                 UnloadingQuantity = reader["Unloading_Quantity"] != DBNull.Value ? Convert.ToDecimal(reader["Unloading_Quantity"]) : 0,
@@ -251,8 +249,8 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.OrdersManagement
                     {
                         try
                         {
-                            // 🔥 جلب كود الجهة القديم من الداتابيز
-                            string getOldCodeQuery = "SELECT Loading_Location FROM Orders WHERE Order_ID = @OrderID";
+                            // ✅ جلب كود الجهة القديم من Agency_Code
+                            string getOldCodeQuery = "SELECT Agency_Code FROM Orders WHERE Order_ID = @OrderID";
                             using (SqlCommand cmd = new SqlCommand(getOldCodeQuery, conn, transaction))
                             {
                                 cmd.Parameters.AddWithValue("@OrderID", Order.OrderId);
@@ -260,7 +258,7 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.OrdersManagement
                                 OldLocationCode = result?.ToString() ?? "";
                             }
 
-                            // 🔥 إذا تغير كود الجهة، نولد رقم فاتورة جديد
+                            // ✅ إذا تغير كود الجهة، نولد رقم فاتورة جديد
                             if (!string.IsNullOrEmpty(Order.LocationCode) && Order.LocationCode != OldLocationCode)
                             {
                                 Order.InvoiceNumber = GenerateInvoiceNumber(Order.LocationCode, conn, transaction);
@@ -286,6 +284,7 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.OrdersManagement
                                 Order.OrderDate = DateTime.Now;
                             }
 
+                            // ✅ تحديث Orders مع حفظ Agency_Code
                             string updateOrderQuery = @"
                                 UPDATE [dbo].[Orders]
                                 SET 
@@ -299,7 +298,8 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.OrdersManagement
                                     Unloading_Quantity = @UnloadingQuantity,
                                     Shortage = @Shortage,
                                     Status = @Status,
-                                    Delivery_Date = @DeliveryDate
+                                    Delivery_Date = @DeliveryDate,
+                                    Agency_Code = @AgencyCode
                                 WHERE Order_ID = @OrderID";
 
                             using (SqlCommand cmd = new SqlCommand(updateOrderQuery, conn, transaction))
@@ -316,6 +316,10 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.OrdersManagement
                                 cmd.Parameters.AddWithValue("@Shortage", Order.Shortage);
                                 cmd.Parameters.AddWithValue("@Status", validStatus);
                                 cmd.Parameters.AddWithValue("@DeliveryDate", validStatus == "Pending" ? (object)DBNull.Value : Order.DeliveryDate);
+
+                                // ✅ حفظ كود الجهة
+                                cmd.Parameters.AddWithValue("@AgencyCode", Order.LocationCode ?? "");
+
                                 cmd.ExecuteNonQuery();
                             }
 
@@ -410,7 +414,7 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.OrdersManagement
                 return Page();
             }
 
-            return RedirectToPage("/OrdersManagement");
+            return Redirect("/OrdersManagement");
         }
 
         public IActionResult OnPostDelete(int orderId)
@@ -456,7 +460,7 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.OrdersManagement
                 return Page();
             }
 
-            return RedirectToPage("/OrdersManagement");
+            return Redirect("/OrdersManagement");
         }
 
         private int GetProviderIdByName(string providerName, SqlConnection conn, SqlTransaction transaction)

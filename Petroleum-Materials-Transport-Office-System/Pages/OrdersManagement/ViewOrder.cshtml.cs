@@ -8,7 +8,7 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.OrdersManagement
     public class ViewOrderModel : PageModel
     {
         private readonly string _connectionString =
-            @"Server=.;Database=PetroleumTransportDB;Trusted_Connection=True;TrustServerCertificate=True;";
+            "Server=DESKTOP-1QHK872;Database=PetroleumTransportDB;Trusted_Connection=True;TrustServerCertificate=True;";
 
         public Order? Order { get; set; }
 
@@ -25,6 +25,7 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.OrdersManagement
                 o.Status,
                 o.Loading_Location,
                 o.Unloading_Location,
+                o.Agency_Code,
 
                 ll.Location_Name AS Loading_Location_Name,
                 ll.Location_Code AS Loading_Location_Code,
@@ -70,13 +71,10 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.OrdersManagement
 
             using SqlDataReader r = cmd.ExecuteReader();
             if (!r.Read())
-                return RedirectToPage("/OrdersManagement");
+                return Redirect("/OrdersManagement");
 
             decimal loadingQty = r["Loading_Quantity"] == DBNull.Value ? 0 : Convert.ToDecimal(r["Loading_Quantity"]);
             decimal unloadingQty = r["Unloading_Quantity"] == DBNull.Value ? 0 : Convert.ToDecimal(r["Unloading_Quantity"]);
-
-            // 🔥 جلب كود الجهة من o.Loading_Location مباشرة (هو الكود الأصلي)
-            string locationCode = r["Loading_Location"]?.ToString() ?? "";
 
             Order = new Order
             {
@@ -92,8 +90,8 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.OrdersManagement
                 UnloadingLocation = r["Unloading_Location_Name"]?.ToString() ?? "",
                 PetroleumType = r["Type_Name"]?.ToString() ?? "",
 
-                // 🔥 كود الجهة الصحيح من العمود Loading_Location
-                LocationCode = locationCode,
+                // ✅ كود الجهة الصحيح من Agency_Code
+                LocationCode = r["Agency_Code"]?.ToString() ?? "",
 
                 LoadingQuantity = loadingQty,
                 UnloadingQuantity = unloadingQty,
@@ -128,15 +126,12 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.OrdersManagement
 
             try
             {
-                // حذف الفاتورة الأول
                 new SqlCommand("DELETE FROM Invoice WHERE Order_ID=@ID", conn, t)
                 { Parameters = { new SqlParameter("@ID", orderId) } }.ExecuteNonQuery();
 
-                // حذف المعاملات المالية
                 new SqlCommand("DELETE FROM Financials WHERE Order_ID=@ID", conn, t)
                 { Parameters = { new SqlParameter("@ID", orderId) } }.ExecuteNonQuery();
 
-                // حذف الطلب نفسه
                 new SqlCommand("DELETE FROM Orders WHERE Order_ID=@ID", conn, t)
                 { Parameters = { new SqlParameter("@ID", orderId) } }.ExecuteNonQuery();
 
@@ -148,8 +143,7 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.OrdersManagement
                 throw;
             }
 
-            // ✅ الرجوع للصفحة الرئيسية - المسار الصحيح
-            return RedirectToPage("/OrdersManagement");
+            return Redirect("/OrdersManagement");
         }
     }
 }
