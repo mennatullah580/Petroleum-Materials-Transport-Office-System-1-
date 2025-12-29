@@ -144,6 +144,17 @@
             font-size: 1rem;
         }
 
+        .btn-add {
+            background-color: var(--color-teal);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+            .btn-add:hover {
+                background-color: var(--color-sky-blue);
+                color: var(--color-navy);
+            }
+
         @@media print {
             body {
                 background-color: white;
@@ -233,6 +244,11 @@
                             <div class="col-md-2 align-self-end">
                                 <button type="submit" class="btn btn-action btn-search w-100">بحث</button>
                             </div>
+                            <div class="col-md-3 align-self-end">
+                                <button type="button" class="btn btn-add btn-search w-100" onclick="addVehicle()">
+                                    <i class="fas fa-plus ms-1"></i> إضافة مركبة
+                                </button>
+                            </div>
                         </form>
 
                         <div class="table-responsive">
@@ -259,7 +275,17 @@
                                                 <td>@item.Capacity</td>
                                                 <td>@item.Status</td>
                                                 <td class="no-print">
-                                                    <button class="btn btn-action btn-sm">تعديل</button>
+                                                    <div class="d-flex gap-2 justify-content-center">
+                                                        <button class="btn btn-action btn-sm" onclick="viewDetails(@item.VehicleId, 'vehicle')" title="تفاصيل">
+                                                            <i class="fas fa-eye"></i>
+                                                        </button>
+                                                        <button class="btn btn-warning btn-sm text-white" onclick="editVehicle(@item.VehicleId)" title="تعديل">
+                                                            <i class="fas fa-edit"></i>
+                                                        </button>
+                                                        <button class="btn btn-danger btn-sm" onclick="deleteVehicle(@item.VehicleId)" title="حذف">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         }
@@ -283,6 +309,11 @@
                             </div>
                             <div class="col-md-2 align-self-end">
                                 <button type="submit" class="btn btn-action btn-search w-100">بحث</button>
+                            </div>
+                            <div class="col-md-3 align-self-end">
+                                <button type="button" class="btn btn-add btn-search w-100" onclick="addDriver()">
+                                    <i class="fas fa-plus ms-1"></i> إضافة سائق
+                                </button>
                             </div>
                         </form>
 
@@ -310,7 +341,17 @@
                                                 <td>@item.Phone</td>
                                                 <td>@item.Status</td>
                                                 <td class="no-print">
-                                                    <button class="btn btn-action btn-sm">تعديل</button>
+                                                    <div class="d-flex gap-2 justify-content-center">
+                                                        <button class="btn btn-action btn-sm" onclick="viewDetails(@item.DriverId, 'driver')" title="تفاصيل">
+                                                            <i class="fas fa-eye"></i>
+                                                        </button>
+                                                        <button class="btn btn-warning btn-sm text-white" onclick="editDriver(@item.DriverId)" title="تعديل">
+                                                            <i class="fas fa-edit"></i>
+                                                        </button>
+                                                        <button class="btn btn-danger btn-sm" onclick="deleteDriver(@item.DriverId)" title="حذف">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         }
@@ -334,6 +375,11 @@
                             </div>
                             <div class="col-md-2 align-self-end">
                                 <button type="submit" class="btn btn-action btn-search w-100">بحث</button>
+                            </div>
+                            <div class="col-md-3 align-self-end">
+                                <button type="button" class="btn btn-add btn-search w-100" onclick="addWarehouse()">
+                                    <i class="fas fa-plus ms-1"></i> إضافة مخزن
+                                </button>
                             </div>
                         </form>
 
@@ -359,7 +405,17 @@
                                                 <td>@item.Location</td>
                                                 <td>@item.Supervisor</td>
                                                 <td class="no-print">
-                                                    <button class="btn btn-action btn-sm">تعديل</button>
+                                                    <div class="d-flex gap-2 justify-content-center">
+                                                        <button class="btn btn-action btn-sm" onclick="viewDetails(@item.WarehouseId, 'warehouse')" title="تفاصيل">
+                                                            <i class="fas fa-eye"></i>
+                                                        </button>
+                                                        <button class="btn btn-warning btn-sm text-white" onclick="editWarehouse(@item.WarehouseId)" title="تعديل">
+                                                            <i class="fas fa-edit"></i>
+                                                        </button>
+                                                        <button class="btn btn-danger btn-sm" onclick="deleteWarehouse(@item.WarehouseId)" title="حذف">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         }
@@ -385,6 +441,11 @@
                             </div>
                             <div class="col-md-3 align-self-end">
                                 <button type="submit" class="btn btn-action btn-search w-100">عرض المركبات المرتبطة</button>
+                            </div>
+                            <div class="col-md-3 align-self-end">
+                                <button type="button" class="btn btn-add btn-search w-100" onclick="addMapping()">
+                                    <i class="fas fa-plus ms-1"></i> ربط جديد
+                                </button>
                             </div>
                         </form>
 
@@ -417,7 +478,17 @@
 
                                                 <td>@item.Status</td>
                                                 <td class="no-print">
-                                                    <button class="btn btn-action btn-sm">تعديل</button>
+                                                    <div class="d-flex gap-2 justify-content-center">
+                                                        <button class="btn btn-action btn-sm" onclick="viewDetails(@item.VehicleId, 'mapping')" title="تفاصيل">
+                                                            <i class="fas fa-eye"></i>
+                                                        </button>
+                                                        <button class="btn btn-warning btn-sm text-white" onclick="editMapping(@item.VehicleId)" title="تعديل">
+                                                            <i class="fas fa-edit"></i>
+                                                        </button>
+                                                        <button class="btn btn-danger btn-sm" onclick="deleteMapping(@item.VehicleId)" title="إلغاء الربط">
+                                                            <i class="fas fa-unlink"></i>
+                                                        </button>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         }
@@ -436,7 +507,601 @@
         </div>
     </div>
 
+    <!-- Add/Edit Vehicle Modal -->
+    <div class="modal fade" id="vehicleModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header" style="background-color: var(--color-navy); color: white;">
+                    <h5 class="modal-title" id="vehicleModalTitle">إضافة مركبة</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="post" asp-page-handler="SaveVehicle">
+                    <input type="hidden" asp-for="ActiveTab" value="vehicles" />
+                    <input type="hidden" asp-for="VehicleInput.VehicleId" id="vehicleId" />
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">رقم اللوحة</label>
+                            <input type="text" class="form-control" asp-for="VehicleInput.PlateNumber" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">الموديل / الماركة</label>
+                            <input type="text" class="form-control" asp-for="VehicleInput.Model" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">الحمولة (لتر)</label>
+                            <input type="number" step="0.01" class="form-control" asp-for="VehicleInput.Capacity" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">الحالة</label>
+                            <select class="form-select" asp-for="VehicleInput.Status" required>
+                                <option value="Active">نشط</option>
+                                <option value="Maintenance">صيانة</option>
+                                <option value="Inactive">غير نشط</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">المقاول المسند (اختياري)</label>
+                            <select class="form-select" asp-for="VehicleInput.AssignedProvider">
+                                <option value="">لا يوجد</option>
+                                @foreach (var contractor in Model.ContractorsList)
+                                {
+                                    if (!string.IsNullOrEmpty(contractor.Value))
+                                    {
+                                        <option value="@contractor.Value">@contractor.Text</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                        <button type="submit" class="btn btn-primary">حفظ</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Driver Modal -->
+    <div class="modal fade" id="driverModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header" style="background-color: var(--color-navy); color: white;">
+                    <h5 class="modal-title" id="driverModalTitle">إضافة سائق</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="post" asp-page-handler="SaveDriver">
+                    <input type="hidden" asp-for="ActiveTab" value="drivers" />
+                    <input type="hidden" asp-for="DriverInput.DriverId" id="driverId" />
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">الاسم الرباعي</label>
+                            <input type="text" class="form-control" asp-for="DriverInput.Name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">رقم الرخصة</label>
+                            <input type="text" class="form-control" asp-for="DriverInput.LicenseNumber" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">رقم الهاتف</label>
+                            <input type="tel" class="form-control" asp-for="DriverInput.PhoneNumber" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">الحالة</label>
+                            <select class="form-select" asp-for="DriverInput.Status" required>
+                                <option value="Available">متاح</option>
+                                <option value="Busy">مشغول</option>
+                                <option value="Vacation">في إجازة</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                        <button type="submit" class="btn btn-primary">حفظ</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Warehouse Modal -->
+    <div class="modal fade" id="warehouseModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header" style="background-color: var(--color-navy); color: white;">
+                    <h5 class="modal-title" id="warehouseModalTitle">إضافة مخزن</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="post" asp-page-handler="SaveWarehouse">
+                    <input type="hidden" asp-for="ActiveTab" value="warehouses" />
+                    <input type="hidden" asp-for="WarehouseInput.WarehouseId" id="warehouseId" />
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">اسم المخزن / الموقع</label>
+                            <input type="text" class="form-control" asp-for="WarehouseInput.Location" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">المشرف المسؤول</label>
+                            <input type="text" class="form-control" asp-for="WarehouseInput.SupervisorName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">السعة (لتر)</label>
+                            <input type="number" step="0.01" class="form-control" asp-for="WarehouseInput.Capacity" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                        <button type="submit" class="btn btn-primary">حفظ</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Mapping Modal -->
+    <div class="modal fade" id="mappingModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header" style="background-color: var(--color-navy); color: white;">
+                    <h5 class="modal-title" id="mappingModalTitle">ربط مركبة بمقاول</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="post" asp-page-handler="SaveMapping">
+                    <input type="hidden" asp-for="ActiveTab" value="mapping" />
+                    <input type="hidden" asp-for="MappingInput.VehicleId" id="mappingVehicleId" />
+                    <input type="hidden" asp-for="MappingInput.ProviderName" id="providerName" />
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">المركبة</label>
+                            <select class="form-select" id="vehicleSelect" onchange="updateVehicleId(this.value)">
+                                <option value="">اختر المركبة...</option>
+                                @foreach (var vehicle in Model.VehicleList)
+                                {
+                                    if (!string.IsNullOrEmpty(vehicle.Value))
+                                    {
+                                        <option value="@vehicle.Value">@vehicle.Text</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">المقاول</label>
+                            <select class="form-select" asp-for="MappingInput.ProviderId" required>
+                                <option value="">اختر المقاول...</option>
+                                @foreach (var provider in Model.ProviderList)
+                                {
+                                    if (!string.IsNullOrEmpty(provider.Value))
+                                    {
+                                        <option value="@provider.Value">@provider.Text</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                        <button type="submit" class="btn btn-primary">حفظ</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Details Modal -->
+    <div class="modal fade" id="detailsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header" style="background-color: var(--color-navy); color: white;">
+                    <h5 class="modal-title" id="detailsModalTitle">تفاصيل</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="modalLoader" class="text-center py-3">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">جاري التحميل...</span>
+                        </div>
+                    </div>
+                    <div id="modalContent" style="display:none;">
+                        <table class="table table-bordered">
+                            <tbody id="modalTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Store the current active tab when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            const activeTab = '@Model.ActiveTab';
+            if (activeTab) {
+                const tabElement = document.getElementById(`pills-${activeTab}-tab`);
+                if (tabElement) {
+                    tabElement.click();
+                }
+            }
+        });
+
+        // =========================================================
+        // VEHICLE FUNCTIONS
+        // =========================================================
+        function addVehicle() {
+            const modal = new bootstrap.Modal(document.getElementById('vehicleModal'));
+            const title = document.getElementById('vehicleModalTitle');
+            const idInput = document.getElementById('vehicleId');
+
+            title.innerText = "إضافة مركبة";
+            idInput.value = 0;
+
+            // Clear form
+            document.querySelector('input[name="VehicleInput.PlateNumber"]').value = '';
+            document.querySelector('input[name="VehicleInput.Model"]').value = '';
+            document.querySelector('input[name="VehicleInput.Capacity"]').value = '';
+            document.querySelector('select[name="VehicleInput.Status"]').value = 'Active';
+            document.querySelector('select[name="VehicleInput.AssignedProvider"]').value = '';
+
+            modal.show();
+        }
+
+        function editVehicle(id) {
+            const modal = new bootstrap.Modal(document.getElementById('vehicleModal'));
+            const title = document.getElementById('vehicleModalTitle');
+            const idInput = document.getElementById('vehicleId');
+
+            title.innerText = "تعديل مركبة";
+            idInput.value = id;
+
+            // Fetch existing data
+            fetch(`?handler=VehicleDetails&id=${id}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert('حدث خطأ أثناء تحميل البيانات: ' + data.error);
+                        return;
+                    }
+
+                    document.querySelector('input[name="VehicleInput.PlateNumber"]').value = data.plateNumber || '';
+                    document.querySelector('input[name="VehicleInput.Model"]').value = data.model || '';
+                    document.querySelector('input[name="VehicleInput.Capacity"]').value = data.capacity || '';
+                    document.querySelector('select[name="VehicleInput.Status"]').value = data.status || 'Active';
+                    document.querySelector('select[name="VehicleInput.AssignedProvider"]').value = data.assignedProvider || '';
+                    modal.show();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('حدث خطأ أثناء تحميل البيانات');
+                });
+        }
+
+        function deleteVehicle(id) {
+            if(confirm("هل أنت متأكد من حذف هذه المركبة؟")) {
+                let currentTab = '@Model.ActiveTab' || 'vehicles';
+
+                let form = document.createElement('form');
+                form.method = 'post';
+                form.style.display = 'none';
+
+                let tokenInput = document.createElement('input');
+                tokenInput.type = 'hidden';
+                tokenInput.name = '__RequestVerificationToken';
+                tokenInput.value = document.querySelector('input[name="__RequestVerificationToken"]').value;
+                form.appendChild(tokenInput);
+
+                let activeTabInput = document.createElement('input');
+                activeTabInput.type = 'hidden';
+                activeTabInput.name = 'activeTab';
+                activeTabInput.value = currentTab;
+                form.appendChild(activeTabInput);
+
+                form.action = `?handler=DeleteVehicle&id=${id}`;
+
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+
+        // =========================================================
+        // DRIVER FUNCTIONS
+        // =========================================================
+        function addDriver() {
+            const modal = new bootstrap.Modal(document.getElementById('driverModal'));
+            const title = document.getElementById('driverModalTitle');
+            const idInput = document.getElementById('driverId');
+
+            title.innerText = "إضافة سائق";
+            idInput.value = 0;
+
+            // Clear form
+            document.querySelector('input[name="DriverInput.Name"]').value = '';
+            document.querySelector('input[name="DriverInput.LicenseNumber"]').value = '';
+            document.querySelector('input[name="DriverInput.PhoneNumber"]').value = '';
+            document.querySelector('select[name="DriverInput.Status"]').value = 'Available';
+
+            modal.show();
+        }
+
+        function editDriver(id) {
+            const modal = new bootstrap.Modal(document.getElementById('driverModal'));
+            const title = document.getElementById('driverModalTitle');
+            const idInput = document.getElementById('driverId');
+
+            title.innerText = "تعديل سائق";
+            idInput.value = id;
+
+            // Fetch existing data
+            fetch(`?handler=DriverDetails&id=${id}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert('حدث خطأ أثناء تحميل البيانات: ' + data.error);
+                        return;
+                    }
+
+                    document.querySelector('input[name="DriverInput.Name"]').value = data.name || '';
+                    document.querySelector('input[name="DriverInput.LicenseNumber"]').value = data.licenseNumber || '';
+                    document.querySelector('input[name="DriverInput.PhoneNumber"]').value = data.phoneNumber || '';
+                    document.querySelector('select[name="DriverInput.Status"]').value = data.status || 'Available';
+                    modal.show();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('حدث خطأ أثناء تحميل البيانات');
+                });
+        }
+
+        function deleteDriver(id) {
+            if(confirm("هل أنت متأكد من حذف هذا السائق؟")) {
+                let currentTab = '@Model.ActiveTab' || 'drivers';
+
+                let form = document.createElement('form');
+                form.method = 'post';
+                form.style.display = 'none';
+
+                let tokenInput = document.createElement('input');
+                tokenInput.type = 'hidden';
+                tokenInput.name = '__RequestVerificationToken';
+                tokenInput.value = document.querySelector('input[name="__RequestVerificationToken"]').value;
+                form.appendChild(tokenInput);
+
+                let activeTabInput = document.createElement('input');
+                activeTabInput.type = 'hidden';
+                activeTabInput.name = 'activeTab';
+                activeTabInput.value = currentTab;
+                form.appendChild(activeTabInput);
+
+                form.action = `?handler=DeleteDriver&id=${id}`;
+
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+
+        // =========================================================
+        // WAREHOUSE FUNCTIONS
+        // =========================================================
+        function addWarehouse() {
+            const modal = new bootstrap.Modal(document.getElementById('warehouseModal'));
+            const title = document.getElementById('warehouseModalTitle');
+            const idInput = document.getElementById('warehouseId');
+
+            title.innerText = "إضافة مخزن";
+            idInput.value = 0;
+
+            // Clear form
+            document.querySelector('input[name="WarehouseInput.Location"]').value = '';
+            document.querySelector('input[name="WarehouseInput.SupervisorName"]').value = '';
+            document.querySelector('input[name="WarehouseInput.Capacity"]').value = '';
+
+            modal.show();
+        }
+
+        function editWarehouse(id) {
+            const modal = new bootstrap.Modal(document.getElementById('warehouseModal'));
+            const title = document.getElementById('warehouseModalTitle');
+            const idInput = document.getElementById('warehouseId');
+
+            title.innerText = "تعديل مخزن";
+            idInput.value = id;
+
+            // Fetch existing data
+            fetch(`?handler=WarehouseDetails&id=${id}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert('حدث خطأ أثناء تحميل البيانات: ' + data.error);
+                        return;
+                    }
+
+                    document.querySelector('input[name="WarehouseInput.Location"]').value = data.location || '';
+                    document.querySelector('input[name="WarehouseInput.SupervisorName"]').value = data.supervisorName || '';
+                    document.querySelector('input[name="WarehouseInput.Capacity"]').value = data.capacity || '';
+                    modal.show();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('حدث خطأ أثناء تحميل البيانات');
+                });
+        }
+
+        function deleteWarehouse(id) {
+            if(confirm("هل أنت متأكد من حذف هذا المخزن؟")) {
+                let currentTab = '@Model.ActiveTab' || 'warehouses';
+
+                let form = document.createElement('form');
+                form.method = 'post';
+                form.style.display = 'none';
+
+                let tokenInput = document.createElement('input');
+                tokenInput.type = 'hidden';
+                tokenInput.name = '__RequestVerificationToken';
+                tokenInput.value = document.querySelector('input[name="__RequestVerificationToken"]').value;
+                form.appendChild(tokenInput);
+
+                let activeTabInput = document.createElement('input');
+                activeTabInput.type = 'hidden';
+                activeTabInput.name = 'activeTab';
+                activeTabInput.value = currentTab;
+                form.appendChild(activeTabInput);
+
+                form.action = `?handler=DeleteWarehouse&id=${id}`;
+
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+
+        // =========================================================
+        // MAPPING FUNCTIONS
+        // =========================================================
+        function addMapping() {
+            const modal = new bootstrap.Modal(document.getElementById('mappingModal'));
+            const title = document.getElementById('mappingModalTitle');
+            const vehicleIdInput = document.getElementById('mappingVehicleId');
+
+            title.innerText = "ربط مركبة بمقاول";
+            vehicleIdInput.value = '';
+
+            // Clear form
+            document.getElementById('vehicleSelect').value = '';
+            document.querySelector('select[name="MappingInput.ProviderId"]').value = '';
+
+            modal.show();
+        }
+
+        function editMapping(vehicleId) {
+            const modal = new bootstrap.Modal(document.getElementById('mappingModal'));
+            const title = document.getElementById('mappingModalTitle');
+            const vehicleIdInput = document.getElementById('mappingVehicleId');
+            const providerNameInput = document.getElementById('providerName');
+
+            title.innerText = "تعديل الربط";
+
+            // Fetch existing data
+            fetch(`?handler=MappingDetails&vehicleId=${vehicleId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert('حدث خطأ أثناء تحميل البيانات: ' + data.error);
+                        return;
+                    }
+
+                    vehicleIdInput.value = data.vehicleId || '';
+                    providerNameInput.value = data.providerName || '';
+                    document.querySelector('select[name="MappingInput.ProviderId"]').value = data.providerId || '';
+                    modal.show();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('حدث خطأ أثناء تحميل البيانات');
+                });
+        }
+
+        function deleteMapping(vehicleId) {
+            if(confirm("هل أنت متأكد من إلغاء ربط هذه المركبة؟")) {
+                let currentTab = '@Model.ActiveTab' || 'mapping';
+
+                let form = document.createElement('form');
+                form.method = 'post';
+                form.style.display = 'none';
+
+                let tokenInput = document.createElement('input');
+                tokenInput.type = 'hidden';
+                tokenInput.name = '__RequestVerificationToken';
+                tokenInput.value = document.querySelector('input[name="__RequestVerificationToken"]').value;
+                form.appendChild(tokenInput);
+
+                let activeTabInput = document.createElement('input');
+                activeTabInput.type = 'hidden';
+                activeTabInput.name = 'activeTab';
+                activeTabInput.value = currentTab;
+                form.appendChild(activeTabInput);
+
+                form.action = `?handler=DeleteMapping&vehicleId=${vehicleId}`;
+
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+
+        function updateVehicleId(vehicleId) {
+            document.getElementById('mappingVehicleId').value = vehicleId;
+        }
+
+        // =========================================================
+        // VIEW DETAILS FUNCTION
+        // =========================================================
+        function viewDetails(id, type) {
+            const modal = new bootstrap.Modal(document.getElementById('detailsModal'));
+            const title = document.getElementById('detailsModalTitle');
+            const modalTableBody = document.getElementById('modalTableBody');
+            const modalLoader = document.getElementById('modalLoader');
+            const modalContent = document.getElementById('modalContent');
+
+            modal.show();
+            modalLoader.style.display = 'block';
+            modalContent.style.display = 'none';
+            modalTableBody.innerHTML = '';
+
+            let handlerUrl = '';
+            let typeText = '';
+
+            if (type === 'vehicle') {
+                typeText = 'المركبة';
+                handlerUrl = `?handler=VehicleDetails&id=${id}`;
+            } else if (type === 'driver') {
+                typeText = 'السائق';
+                handlerUrl = `?handler=DriverDetails&id=${id}`;
+            } else if (type === 'warehouse') {
+                typeText = 'المخزن';
+                handlerUrl = `?handler=WarehouseDetails&id=${id}`;
+            } else if (type === 'mapping') {
+                typeText = 'الربط';
+                handlerUrl = `?handler=MappingDetails&vehicleId=${id}`;
+            }
+
+            title.innerText = `تفاصيل ${typeText}`;
+
+            fetch(handlerUrl)
+                .then(response => response.json())
+                .then(data => {
+                    let html = '';
+
+                    if (type === 'vehicle') {
+                        html += `<tr><th>رقم اللوحة</th><td>${data.plateNumber || '-'}</td></tr>`;
+                        html += `<tr><th>الموديل</th><td>${data.model || '-'}</td></tr>`;
+                        html += `<tr><th>الحمولة</th><td>${data.capacity || '0'} لتر</td></tr>`;
+                        html += `<tr><th>الحالة</th><td>${data.status === 'Active' ? 'نشط' : 'صيانة'}</td></tr>`;
+                    } else if (type === 'driver') {
+                        html += `<tr><th>الاسم</th><td>${data.name || '-'}</td></tr>`;
+                        html += `<tr><th>رقم الرخصة</th><td>${data.licenseNumber || '-'}</td></tr>`;
+                        html += `<tr><th>رقم الهاتف</th><td>${data.phoneNumber || '-'}</td></tr>`;
+                        html += `<tr><th>الحالة</th><td>${data.status === 'Available' ? 'متاح' : 'مشغول'}</td></tr>`;
+                    } else if (type === 'warehouse') {
+                        html += `<tr><th>الموقع</th><td>${data.location || '-'}</td></tr>`;
+                        html += `<tr><th>المشرف</th><td>${data.supervisorName || '-'}</td></tr>`;
+                        html += `<tr><th>السعة</th><td>${data.capacity || '0'} لتر</td></tr>`;
+                    } else if (type === 'mapping') {
+                        html += `<tr><th>المقاول</th><td>${data.providerName || '-'}</td></tr>`;
+                    }
+
+                    modalTableBody.innerHTML = html;
+                    modalLoader.style.display = 'none';
+                    modalContent.style.display = 'block';
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    modalTableBody.innerHTML = '<tr><td colspan="2" class="text-danger">حدث خطأ أثناء جلب البيانات</td></tr>';
+                    modalLoader.style.display = 'none';
+                    modalContent.style.display = 'block';
+                });
+        }
+    </script>
 
 </body>
 </html>

@@ -1,0 +1,118 @@
+﻿<!-- Pages/AdminPanel/Reports.cshtml -->
+@@page
+@model Petroleum_Materials_Transport_Office_System.Pages.AdminPanel.ReportsModel
+@{
+    ViewData["Title"] = "التقارير";
+}
+
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: #f8f8f8;
+        }
+        .admin-panel {
+            background-color: #567C8D;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            margin: 20px auto;
+            max-width: 95%;
+        }
+        .panel-header {
+            background-color: #ffffff;
+            padding: 10px 20px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+            color: #333;
+        }
+        .chart-container {
+            height: 400px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <div class="admin-panel">
+            <div class="panel-header">لوحة التحكم</div>
+
+            <!-- Tabs -->
+            <ul class="nav nav-tabs mb-3" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link" href="/AdminPanel/UserManagement">إدارة المستخدمين</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/AdminPanel/SystemLogs">سجلات النظام</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="/AdminPanel/Reports">التقارير</a>
+                </li>
+            </ul>
+
+            <div class="tab-content">
+                <div class="chart-container">
+                    <canvas id="ordersChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Prepare data
+        const labels = @Html.Raw(Json.Serialize(Model.OrderStats.Select(s => s.Date)));
+        const data = @Html.Raw(Json.Serialize(Model.OrderStats.Select(s => s.Count)));
+
+        // Create chart
+        const ctx = document.getElementById('ordersChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'عدد الطلبات',
+                    data: data,
+                    backgroundColor: '#567C8D',
+                    borderColor: '#4a6b7a',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: {
+                            font: {
+                                family: 'Cairo'
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

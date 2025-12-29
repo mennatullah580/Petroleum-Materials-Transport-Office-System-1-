@@ -135,6 +135,18 @@
                 color: white;
             }
 
+        /* New buttons styling to match theme but differentiate actions */
+        .btn-add {
+            background-color: var(--color-teal);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+            .btn-add:hover {
+                background-color: var(--color-sky-blue);
+                color: var(--color-navy);
+            }
+
         .btn-search {
             height: 100%;
             display: flex;
@@ -235,7 +247,7 @@
                                     }
                                 </select>
                             </div>
-                            <div class="col-md-2">
+                            <div class="col-md-1">
                                 <label>حالة الطلب</label>
                                 <select class="form-select" name="StatusFilter">
                                     <option>الكل</option>
@@ -243,8 +255,13 @@
                                     <option selected="@(Model.StatusFilter == "قيد التنفيذ")">قيد التنفيذ</option>
                                 </select>
                             </div>
-                            <div class="col-md-2 align-self-end">
+                            <div class="col-md-1 align-self-end">
                                 <button type="submit" class="btn btn-action btn-search w-100">بحث</button>
+                            </div>
+                            <div class="col-md-2 align-self-end">
+                                <button type="button" class="btn btn-add btn-search w-100" onclick="openAddModal('order')">
+                                    <i class="fas fa-plus ms-1"></i> إضافة أمر شغل
+                                </button>
                             </div>
                         </form>
 
@@ -266,7 +283,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @if (Model.Orders != null)
+                                    @if (Model.Orders != null && Model.Orders.Count > 0)
                                     {
                                         foreach (var item in Model.Orders)
                                         {
@@ -291,10 +308,26 @@
                                                     }
                                                 </td>
                                                 <td class="no-print">
-                                                    <button class="btn-action"><i class="fas fa-eye"></i></button>
+                                                    <div class="d-flex gap-2 justify-content-center">
+                                                        <button class="btn btn-action btn-sm" onclick="openDetailsModal('@item.InvoiceNumber', 'order')" title="تفاصيل">
+                                                            <i class="fas fa-eye"></i>
+                                                        </button>
+                                                        <button class="btn btn-warning btn-sm text-white" onclick="openEditModal('@item.InvoiceNumber', 'order')" title="تعديل">
+                                                            <i class="fas fa-pen"></i>
+                                                        </button>
+                                                        <button class="btn btn-danger btn-sm" onclick="deleteItem('@item.InvoiceNumber', 'order')" title="حذف">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         }
+                                    }
+                                    else
+                                    {
+                                        <tr>
+                                            <td colspan="11" class="text-muted">لا توجد بيانات متاحة</td>
+                                        </tr>
                                     }
                                 </tbody>
                             </table>
@@ -319,6 +352,11 @@
                             <div class="col-md-2 align-self-end">
                                 <button type="submit" class="btn btn-action btn-search w-100">بحث</button>
                             </div>
+                            <div class="col-md-3 align-self-end">
+                                <button type="button" class="btn btn-add btn-search w-100" onclick="openAddModal('fuel')">
+                                    <i class="fas fa-plus ms-1"></i> إضافة نوع وقود
+                                </button>
+                            </div>
                         </form>
 
                         <div class="table-responsive">
@@ -336,7 +374,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @if (Model.Fuels != null)
+                                    @if (Model.Fuels != null && Model.Fuels.Count > 0)
                                     {
                                         foreach (var fuel in Model.Fuels)
                                         {
@@ -358,10 +396,26 @@
                                                     }
                                                 </td>
                                                 <td class="no-print">
-                                                    <button class="btn-action"><i class="fas fa-edit"></i></button>
+                                                    <div class="d-flex gap-2 justify-content-center">
+                                                        <button class="btn btn-action btn-sm" onclick="openDetailsModal('@fuel.Name', 'fuel')" title="تفاصيل">
+                                                            <i class="fas fa-eye"></i>
+                                                        </button>
+                                                        <button class="btn btn-warning btn-sm text-white" onclick="openEditModal('@fuel.Name', 'fuel')" title="تعديل">
+                                                            <i class="fas fa-pen"></i>
+                                                        </button>
+                                                        <button class="btn btn-danger btn-sm" onclick="deleteItem('@fuel.Name', 'fuel')" title="حذف">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         }
+                                    }
+                                    else
+                                    {
+                                        <tr>
+                                            <td colspan="8" class="text-muted">لا توجد بيانات متاحة</td>
+                                        </tr>
                                     }
                                 </tbody>
                             </table>
@@ -373,7 +427,376 @@
         </div>
     </div>
 
+    <!-- Details Modal -->
+    <div class="modal fade" id="detailsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header" style="background-color: var(--color-navy); color: white;">
+                    <h5 class="modal-title" id="modalTitle">تفاصيل</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="modalLoader" class="text-center py-3">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">جاري التحميل...</span>
+                        </div>
+                    </div>
+                    <div id="modalContent" style="display:none;">
+                        <table class="table table-bordered">
+                            <tbody id="modalTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Order Modal -->
+    <div class="modal fade" id="orderModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header" style="background-color: var(--color-navy); color: white;">
+                    <h5 class="modal-title" id="orderModalTitle">إضافة أمر شغل</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="post" asp-page-handler="SaveOrder">
+                    <div class="modal-body">
+                        <input type="hidden" id="orderInvoiceOriginal" />
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">رقم الفاتورة</label>
+                                <input type="text" class="form-control" name="OrderInput.InvoiceNumber" id="orderInputInvoiceNumber" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">التاريخ</label>
+                                <input type="date" class="form-control" name="OrderInput.Date" id="orderInputDate" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">العميل</label>
+                                <select class="form-select" name="OrderInput.CompanyId" id="orderInputCompanyId" required>
+                                    <option value="">اختر العميل</option>
+                                    @foreach (var cust in Model.Customers)
+                                    {
+                                        if (cust.Value != "الكل")
+                                        {
+                                            <option value="@cust.Value">@cust.Text</option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">المقاول</label>
+                                <input type="text" class="form-control" name="OrderInput.Contractor" id="orderInputContractor" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">جهة التحميل</label>
+                                <input type="text" class="form-control" name="OrderInput.Loading" id="orderInputLoading" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">جهة التفريغ</label>
+                                <input type="text" class="form-control" name="OrderInput.Unloading" id="orderInputUnloading" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">الكمية</label>
+                                <input type="number" step="0.01" class="form-control" name="OrderInput.Quantity" id="orderInputQuantity" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">العجز</label>
+                                <input type="number" step="0.01" class="form-control" name="OrderInput.Shortage" id="orderInputShortage">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">الحالة</label>
+                                <select class="form-select" name="OrderInput.Status" id="orderInputStatus" required>
+                                    <option value="Pending">قيد التنفيذ</option>
+                                    <option value="Delivered">مكتمل</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                        <button type="submit" class="btn btn-primary">حفظ</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Fuel Modal -->
+    <div class="modal fade" id="fuelModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header" style="background-color: var(--color-navy); color: white;">
+                    <h5 class="modal-title" id="fuelModalTitle">إضافة نوع وقود</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="post" asp-page-handler="SaveFuel">
+                    <div class="modal-body">
+                        <input type="hidden" id="fuelNameOriginal" />
+                        <div class="mb-3">
+                            <label class="form-label">اسم النوع</label>
+                            <input type="text" class="form-control" name="FuelInput.Name" id="fuelInputName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">سعر الشركة</label>
+                            <input type="number" step="0.01" class="form-control" name="FuelInput.CompanyPrice" id="fuelInputCompanyPrice" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">سعر المقاول</label>
+                            <input type="number" step="0.01" class="form-control" name="FuelInput.ContractorPrice" id="fuelInputContractorPrice" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">ضريبة الخصم (%)</label>
+                            <input type="number" step="0.01" class="form-control" name="FuelInput.Tax" id="fuelInputTax" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">دمغة نسبية (%)</label>
+                            <input type="number" step="0.01" class="form-control" name="FuelInput.Stamp" id="fuelInputStamp" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">الحالة</label>
+                            <select class="form-select" name="FuelInput.IsActive" id="fuelInputIsActive" required>
+                                <option value="true">نشط</option>
+                                <option value="false">غير نشط</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                        <button type="submit" class="btn btn-primary">حفظ</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Function to handle opening the details modal
+        function openDetailsModal(id, type) {
+            const modalElement = document.getElementById('detailsModal');
+            const modal = new bootstrap.Modal(modalElement);
+            const modalTitle = document.getElementById('modalTitle');
+            const modalTableBody = document.getElementById('modalTableBody');
+            const modalLoader = document.getElementById('modalLoader');
+            const modalContent = document.getElementById('modalContent');
+
+            // Show Modal and Loader
+            modal.show();
+            modalLoader.style.display = 'block';
+            modalContent.style.display = 'none';
+            modalTableBody.innerHTML = '';
+
+            let handlerUrl = '';
+
+            // Determine URL based on type
+            if (type === 'order') {
+                modalTitle.innerText = "تفاصيل أمر الشغل";
+                handlerUrl = `?handler=OrderDetails&id=${encodeURIComponent(id)}`;
+            } else if (type === 'fuel') {
+                modalTitle.innerText = "تفاصيل نوع الوقود";
+                handlerUrl = `?handler=FuelDetails&id=${encodeURIComponent(id)}`;
+            }
+
+            // Fetch Data
+            fetch(handlerUrl)
+                .then(response => {
+                    if (!response.ok) throw new Error("Network response was not ok");
+                    return response.json();
+                })
+                .then(data => {
+                    let html = '';
+
+                    if (type === 'order') {
+                        html += `<tr><th>رقم الفاتورة</th><td>${data.invoiceNumber}</td></tr>`;
+                        html += `<tr><th>التاريخ</th><td>${new Date(data.date).toLocaleDateString('ar-EG')}</td></tr>`;
+                        html += `<tr><th>العميل</th><td>${data.customer}</td></tr>`;
+                        html += `<tr><th>المقاول</th><td>${data.contractor}</td></tr>`;
+                        html += `<tr><th>جهة التحميل</th><td>${data.loading}</td></tr>`;
+                        html += `<tr><th>جهة التفريغ</th><td>${data.unloading}</td></tr>`;
+                        html += `<tr><th>الكمية</th><td>${data.quantity.toFixed(2)}</td></tr>`;
+                        html += `<tr><th>العجز</th><td class="text-danger">${data.shortage.toFixed(2)}</td></tr>`;
+                        html += `<tr><th>الصافي</th><td class="fw-bold">${data.net.toFixed(2)}</td></tr>`;
+                        html += `<tr><th>الحالة</th><td>${data.status}</td></tr>`;
+                    }
+                    else if (type === 'fuel') {
+                        html += `<tr><th>اسم النوع</th><td>${data.name}</td></tr>`;
+                        html += `<tr><th>سعر الشركة</th><td>${data.companyPrice.toFixed(2)}</td></tr>`;
+                        html += `<tr><th>سعر المقاول</th><td>${data.contractorPrice.toFixed(2)}</td></tr>`;
+                        html += `<tr><th>ضريبة الخصم (%)</th><td>${data.tax}%</td></tr>`;
+                        html += `<tr><th>دمغة نسبية (%)</th><td>${data.stamp}%</td></tr>`;
+                        html += `<tr><th>الحالة</th><td>${data.isActive ? 'نشط' : 'غير نشط'}</td></tr>`;
+                    }
+
+                    modalTableBody.innerHTML = html;
+                    modalLoader.style.display = 'none';
+                    modalContent.style.display = 'block';
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    modalTableBody.innerHTML = '<tr><td colspan="2" class="text-danger">حدث خطأ أثناء جلب البيانات</td></tr>';
+                    modalLoader.style.display = 'none';
+                    modalContent.style.display = 'block';
+                });
+        }
+
+        // Function to open Add/Edit modal for Orders
+        function openOrderModal(id = null) {
+            const modal = new bootstrap.Modal(document.getElementById('orderModal'));
+            const title = document.getElementById('orderModalTitle');
+            const idInput = document.getElementById('orderInvoiceOriginal');
+
+            if (id) {
+                // Edit mode
+                title.innerText = "تعديل أمر شغل";
+                idInput.value = id;
+
+                // Fetch existing data
+                fetch(`?handler=OrderDetails&id=${encodeURIComponent(id)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        document.getElementById('orderInputInvoiceNumber').value = data.invoiceNumber || '';
+                        document.getElementById('orderInputDate').value = data.date ? new Date(data.date).toISOString().split('T')[0] : '';
+                        document.getElementById('orderInputCompanyId').value = data.companyId || '';
+                        document.getElementById('orderInputContractor').value = data.contractor || '';
+                        document.getElementById('orderInputLoading').value = data.loading || '';
+                        document.getElementById('orderInputUnloading').value = data.unloading || '';
+                        document.getElementById('orderInputQuantity').value = data.quantity || 0;
+                        document.getElementById('orderInputShortage').value = data.shortage || 0;
+                        document.getElementById('orderInputStatus').value = data.status || 'Pending';
+                        modal.show();
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('حدث خطأ أثناء تحميل البيانات');
+                    });
+            } else {
+                // Add mode
+                title.innerText = "إضافة أمر شغل";
+                idInput.value = '';
+
+                // Clear form
+                document.getElementById('orderInputInvoiceNumber').value = '';
+                document.getElementById('orderInputDate').value = '';
+                document.getElementById('orderInputCompanyId').value = '';
+                document.getElementById('orderInputContractor').value = '';
+                document.getElementById('orderInputLoading').value = '';
+                document.getElementById('orderInputUnloading').value = '';
+                document.getElementById('orderInputQuantity').value = 0;
+                document.getElementById('orderInputShortage').value = 0;
+                document.getElementById('orderInputStatus').value = 'Pending';
+
+                modal.show();
+            }
+        }
+
+        // Function to open Add/Edit modal for Fuel
+        function openFuelModal(id = null) {
+            const modal = new bootstrap.Modal(document.getElementById('fuelModal'));
+            const title = document.getElementById('fuelModalTitle');
+            const idInput = document.getElementById('fuelNameOriginal');
+
+            if (id) {
+                // Edit mode
+                title.innerText = "تعديل نوع وقود";
+                idInput.value = id;
+
+                // Fetch existing data
+                fetch(`?handler=FuelDetails&id=${encodeURIComponent(id)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        document.getElementById('fuelInputName').value = data.name || '';
+                        document.getElementById('fuelInputCompanyPrice').value = data.companyPrice || 0;
+                        document.getElementById('fuelInputContractorPrice').value = data.contractorPrice || 0;
+                        document.getElementById('fuelInputTax').value = data.tax || 0;
+                        document.getElementById('fuelInputStamp').value = data.stamp || 0;
+                        document.getElementById('fuelInputIsActive').value = data.isActive ? 'true' : 'false';
+                        modal.show();
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('حدث خطأ أثناء تحميل البيانات');
+                    });
+            } else {
+                // Add mode
+                title.innerText = "إضافة نوع وقود";
+                idInput.value = '';
+
+                // Clear form
+                document.getElementById('fuelInputName').value = '';
+                document.getElementById('fuelInputCompanyPrice').value = 0;
+                document.getElementById('fuelInputContractorPrice').value = 0;
+                document.getElementById('fuelInputTax').value = 0;
+                document.getElementById('fuelInputStamp').value = 0;
+                document.getElementById('fuelInputIsActive').value = 'true';
+
+                modal.show();
+            }
+        }
+
+        // Unified function to open modals based on type
+        function openAddModal(type) {
+            switch(type) {
+                case 'order':
+                    openOrderModal(null);
+                    break;
+                case 'fuel':
+                    openFuelModal(null);
+                    break;
+            }
+        }
+
+        // Unified function to open edit modals based on type
+        function openEditModal(id, type) {
+            switch(type) {
+                case 'order':
+                    openOrderModal(id);
+                    break;
+                case 'fuel':
+                    openFuelModal(id);
+                    break;
+            }
+        }
+
+        // Function to delete items
+        function deleteItem(id, type) {
+            if(confirm("هل أنت متأكد من حذف هذا العنصر؟")) {
+                let form = document.createElement('form');
+                form.method = 'post';
+                form.style.display = 'none';
+
+                let input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = '__RequestVerificationToken';
+                input.value = document.querySelector('input[name="__RequestVerificationToken"]').value;
+                form.appendChild(input);
+
+                // Set the appropriate handler based on type
+                switch(type) {
+                    case 'order':
+                        form.action = `?handler=DeleteOrder&id=${encodeURIComponent(id)}`;
+                        break;
+                    case 'fuel':
+                        form.action = `?handler=DeleteFuel&id=${encodeURIComponent(id)}`;
+                        break;
+                }
+
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+
+        // Make functions globally available
+        window.openAddModal = openAddModal;
+        window.openEditModal = openEditModal;
+        window.deleteItem = deleteItem;
+        window.openDetailsModal = openDetailsModal;
+    </script>
 
 </body>
 </html>
+                

@@ -126,14 +126,19 @@
 
 
             <!-- Tabs -->
+            <!-- In BOTH UserManagement.cshtml AND SystemLogs.cshtml -->
             <ul class="nav nav-tabs mb-3" role="tablist">
-
-                <li class="nav-item" role="presentation">
-                    <!-- ❌ FIX: Remove space in URL -->
-                    <a class="nav-link active" href="/AdminPanel/UserManagement">إدارة المستخدمين</a>
+                <li class="nav-item">
+                    <a class="nav-link @(ViewContext.RouteData.Values["page"].ToString().Contains("UserManagement") ? "active" : "")"
+                       href="/AdminPanel/UserManagement">إدارة المستخدمين</a>
                 </li>
-                <li class="nav-item" role="presentation">
-                    <a class="nav-link" href="/AdminPanel/SystemLogs">سجلات النظام</a>
+                <li class="nav-item">
+                    <a class="nav-link @(ViewContext.RouteData.Values["page"].ToString().Contains("SystemLogs") ? "active" : "")"
+                       href="/AdminPanel/SystemLogs">سجلات النظام</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link @(ViewContext.RouteData.Values["page"].ToString().Contains("Reports") ? "active" : "")"
+                       href="/AdminPanel/Reports">التقارير</a>
                 </li>
             </ul>
 
