@@ -9,7 +9,7 @@ namespace Petroleum_Materials_Transport_Office_System.Models
         [Required(ErrorMessage = "الاسم الكامل مطلوب")]
         public string FullName { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "اسم المستخدم مطلوب")]
+        //[Required(ErrorMessage = "اسم المستخدم مطلوب")]
         public string Username { get; set; } = string.Empty;
 
         [EmailAddress]

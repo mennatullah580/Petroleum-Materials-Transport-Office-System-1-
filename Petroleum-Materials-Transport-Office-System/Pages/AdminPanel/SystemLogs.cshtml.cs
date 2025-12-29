@@ -8,10 +8,7 @@ namespace Petroleum_Materials_Transport_Office_System.Pages.AdminPanel
     {
         private readonly ActionLogger _logger;
 
-        public SystemLogsModel(ActionLogger logger)
-        {
-            _logger = logger;
-        }
+        public SystemLogsModel(ActionLogger logger) => _logger = logger;
 
         public List<LogEntry> Logs { get; set; } = new();
         public string? SearchTerm { get; set; }
